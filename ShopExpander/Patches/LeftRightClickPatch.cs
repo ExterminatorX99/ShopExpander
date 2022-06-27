@@ -6,54 +6,52 @@ namespace ShopExpander.Patches
     {
         public static void Load()
         {
-            On.Terraria.UI.ItemSlot.LeftClick_ItemArray_int_int += PrefixLeft;
-            On.Terraria.UI.ItemSlot.RightClick_ItemArray_int_int += PrefixRight;
+            On.Terraria.UI.ItemSlot.HandleShopSlot += PrefixLeft;
+            On.Terraria.UI.ItemSlot.HandleShopSlot += PrefixRight;
         }
 
-        private static void PrefixLeft(On.Terraria.UI.ItemSlot.orig_LeftClick_ItemArray_int_int orig, Item[] inv, int context, int slot)
+        private static void PrefixLeft(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
         {
-            if (Prefix(inv, context, slot, false))
-                orig(inv, context, slot);
-        }
-
-        private static void PrefixRight(On.Terraria.UI.ItemSlot.orig_RightClick_ItemArray_int_int orig, Item[] inv, int context, int slot)
-        {
-            if (Main.mouseRight)
+            if (leftClickIsValid && Main.mouseLeft && Main.mouseLeftRelease)
             {
-                if (Prefix(inv, context, slot, true))
-                    orig(inv, context, slot);
+                if (Prefix(inv, slot, false))
+                    orig(inv, slot, rightClickIsValid, leftClickIsValid);
+            }
+        }
+
+        private static void PrefixRight(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
+        {
+            if (rightClickIsValid && Main.mouseRight)
+            {
+                if (Prefix(inv, slot, true))
+                    orig(inv, slot, rightClickIsValid, leftClickIsValid);
             }
             else
             {
-                orig(inv, context, slot);
+                orig(inv, slot, rightClickIsValid, leftClickIsValid);
             }
         }
 
-        private static bool Prefix(Item[] inv, int context, int slot, bool skip)
+        private static bool Prefix(Item[] inv, int slot, bool skip)
         {
             if (ShopExpander.Instance.ActiveShop == null)
                 return true;
 
             if (inv[slot].type == ShopExpander.Instance.ArrowLeft.Item.type)
             {
-                if (context == 15)
-                    if (skip)
-                        ShopExpander.Instance.ActiveShop.MoveFirst();
-                    else
-                        ShopExpander.Instance.ActiveShop.MoveLeft();
+                if (skip)
+                    ShopExpander.Instance.ActiveShop.MoveFirst();
                 else
-                    inv[slot] = new Item();
+                    ShopExpander.Instance.ActiveShop.MoveLeft();
                 return false;
             }
+
             if (inv[slot].type == ShopExpander.Instance.ArrowRight.Item.type)
             {
-                if (context == 15)
-                    if (skip)
-                        ShopExpander.Instance.ActiveShop.MoveLast();
-                    else
-                        ShopExpander.Instance.ActiveShop.MoveRight();
+                if (skip)
+                    ShopExpander.Instance.ActiveShop.MoveLast();
                 else
-                    inv[slot] = new Item();
+                    ShopExpander.Instance.ActiveShop.MoveRight();
                 return false;
             }
 
