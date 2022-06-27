@@ -14,11 +14,11 @@ namespace ShopExpander
 
         public override void SetDefaults()
         {
-            item.width = 28;
-            item.height = 28;
-            item.maxStack = 1;
-            item.value = 0;
-            item.rare = ItemRarityID.White;
+            Item.width = 28;
+            Item.height = 28;
+            Item.maxStack = 1;
+            Item.value = 0;
+            Item.rare = ItemRarityID.White;
         }
 
         public override bool OnPickup(Player player)
@@ -28,7 +28,7 @@ namespace ShopExpander
 
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            tooltips.RemoveAll(x => !(x.mod == "Terraria" && x.Name == "ItemName"));
+            tooltips.RemoveAll(x => !(x.Mod == "Terraria" && x.Name == "ItemName"));
         }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ModLoader;
 using ShopExpander.Providers;
 using ShopExpander.Patches;
@@ -79,8 +80,8 @@ namespace ShopExpander
 
             if (!Main.dedServ)
             {
-                Main.itemTexture[ArrowLeft.item.type] = CropTexture(Main.textGlyphTexture[0], new Rectangle(4 * 28, 0, 28, 28));
-                Main.itemTexture[ArrowRight.item.type] = CropTexture(Main.textGlyphTexture[0], new Rectangle(5 * 28, 0, 28, 28));
+                TextureAssets.Item[ArrowLeft.Item.type].Value = CropTexture(Main.textGlyphTexture[0], new Rectangle(4 * 28, 0, 28, 28));
+                TextureAssets.Item[ArrowRight.Item.type].Value = CropTexture(Main.textGlyphTexture[0], new Rectangle(5 * 28, 0, 28, 28));
                 textureSetupDone = true;
             }
         }
@@ -91,8 +92,8 @@ namespace ShopExpander
 
             if (textureSetupDone)
             {
-                Main.itemTexture[ArrowLeft.item.type].Dispose();
-                Main.itemTexture[ArrowRight.item.type].Dispose();
+                TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
+                TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
             }
 
             Instance = null;

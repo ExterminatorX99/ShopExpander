@@ -104,7 +104,7 @@ namespace ShopExpander
 
             if (prevPage >= 0)
             {
-                CurrentFrame[0].SetDefaults(ShopExpander.Instance.ArrowLeft.item.type);
+                CurrentFrame[0].SetDefaults(ShopExpander.Instance.ArrowLeft.Item.type);
                 CurrentFrame[0].ClearNameOverride();
                 CurrentFrame[0].SetNameOverride(CurrentFrame[0].Name + GetPageHintText(pageProviders[prevPage], prevPageNum));
             }
@@ -129,7 +129,7 @@ namespace ShopExpander
 
             if (nextPage < pageProviders.Count)
             {
-                CurrentFrame[Chest.maxItems - 1].SetDefaults(ShopExpander.Instance.ArrowRight.item.type);
+                CurrentFrame[Chest.maxItems - 1].SetDefaults(ShopExpander.Instance.ArrowRight.Item.type);
                 CurrentFrame[Chest.maxItems - 1].ClearNameOverride();
                 CurrentFrame[Chest.maxItems - 1].SetNameOverride(CurrentFrame[Chest.maxItems - 1].Name + GetPageHintText(pageProviders[nextPage], nextPageNum));
             }

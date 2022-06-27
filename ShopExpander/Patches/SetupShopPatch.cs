@@ -50,7 +50,7 @@ namespace ShopExpander.Patches
                 ModNPC npc = NPCLoader.GetNPC(type);
                 if (npc != null)
                 {
-                    DoSetupFor(shop, dyn, "ModNPC", npc.mod, npc, delegate (Chest c)
+                    DoSetupFor(shop, dyn, "ModNPC", npc.Mod, npc, delegate (Chest c)
                     {
                         int zero = 0;
                         npc.SetupShop(c, ref zero);
@@ -66,7 +66,7 @@ namespace ShopExpander.Patches
                 }
                 else
                 {
-                    DoSetupFor(shop, dyn, "GloabalNPC", globalNPC.mod, globalNPC, delegate (Chest c)
+                    DoSetupFor(shop, dyn, "GloabalNPC", globalNPC.Mod, globalNPC, delegate (Chest c)
                     {
                         int zero = 0;
                         globalNPC.SetupShop(type, c, ref zero);
@@ -85,7 +85,7 @@ namespace ShopExpander.Patches
                 }
                 catch (Exception e)
                 {
-                    LogAndPrint("modifier GlobalNPC", item.mod, item, e);
+                    LogAndPrint("modifier GlobalNPC", item.Mod, item, e);
                 }
             }
 

@@ -34,7 +34,7 @@ namespace ShopExpander.Patches
             if (ShopExpander.Instance.ActiveShop == null)
                 return true;
 
-            if (inv[slot].type == ShopExpander.Instance.ArrowLeft.item.type)
+            if (inv[slot].type == ShopExpander.Instance.ArrowLeft.Item.type)
             {
                 if (context == 15)
                     if (skip)
@@ -45,7 +45,7 @@ namespace ShopExpander.Patches
                     inv[slot] = new Item();
                 return false;
             }
-            if (inv[slot].type == ShopExpander.Instance.ArrowRight.item.type)
+            if (inv[slot].type == ShopExpander.Instance.ArrowRight.Item.type)
             {
                 if (context == 15)
                     if (skip)
