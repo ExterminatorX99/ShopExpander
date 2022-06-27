@@ -95,7 +95,7 @@ namespace ShopExpander
                 {
                     prevPage--;
                 }
-                    
+
                 if (prevPage >= 0)
                 {
                     prevPageNum = pageProviders[prevPage].NumPages - 1;

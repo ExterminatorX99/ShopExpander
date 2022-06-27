@@ -4,6 +4,7 @@ using ShopExpander.Providers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using log4net;
 using Terraria;
 using Terraria.ModLoader;
 
@@ -178,10 +179,11 @@ namespace ShopExpander.Patches
             string message = string.Format("Shop Expander failed to load {0} from mod {1}.", type, modName);
             Main.NewText(message, Color.Red);
             Main.NewText("See log for more info. If this error persists, please consider reporting it to the author of the mod mentioned above.", Color.Red);
-            ErrorLogger.Log("--- SHOP EXPANDER ERROR ---");
-            ErrorLogger.Log(message);
-            ErrorLogger.Log(e.ToString());
-            ErrorLogger.Log("--- END SHOP EXPANDER ERROR ---");
+            var logger = ShopExpander.Instance.Logger;
+            logger.Error("--- SHOP EXPANDER ERROR ---");
+            logger.Error(message);
+            logger.Error(e.ToString());
+            logger.Error("--- END SHOP EXPANDER ERROR ---");
         }
     }
 }

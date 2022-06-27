@@ -5,8 +5,18 @@ using Terraria.ModLoader;
 
 namespace ShopExpander
 {
+    [Autoload(false)]
     internal class ArrowItem : ModItem
     {
+        private string CustomName { get; }
+
+        public ArrowItem(string customName)
+        {
+            CustomName = customName;
+        }
+
+        public override string Name => CustomName;
+
         public override void AutoStaticDefaults()
         {
             //Stop automatic texture and display name assignment

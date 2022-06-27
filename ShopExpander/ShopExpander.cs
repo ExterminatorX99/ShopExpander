@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using ReLogic.Content;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ModLoader;
@@ -30,7 +31,7 @@ namespace ShopExpander
         public ModItem ArrowLeft { get; private set; }
         public ModItem ArrowRight { get; private set; }
 
-        public ShopAggregator ActiveShop { get; private set; }
+        public ShopAggregator ActiveShop { get; internal set; }
         public readonly CircularBufferProvider Buyback = new CircularBufferProvider("Buyback", ProviderPriority.Buyback);
 
         public readonly LazyObjectConfig<int> ProvisionOverrides = new LazyObjectConfig<int>(40);
@@ -41,11 +42,6 @@ namespace ShopExpander
         public readonly LazyObjectConfig<(string name, int priority, Action setup)[]> LegacyMultipageSetupMethods = new LazyObjectConfig<(string, int, Action)[]>();
 
         private bool textureSetupDone = false;
-
-        public ShopExpander()
-        {
-            Properties = new ModProperties { Autoload = false };
-        }
 
         public void ResetAndBindShop()
         {
@@ -59,11 +55,11 @@ namespace ShopExpander
             if (Instance != null)
                 throw new InvalidOperationException("An instance of ShopExpander is already loaded.");
 
-            ArrowLeft = new ArrowItem();
-            AddItem("ArrowLeft", ArrowLeft);
+            ArrowLeft = new ArrowItem("ArrowLeft");
+            AddContent(ArrowLeft);
 
-            ArrowRight = new ArrowItem();
-            AddItem("ArrowRight", ArrowRight);
+            ArrowRight = new ArrowItem("ArrowRight");
+            AddContent(ArrowRight);
 
             Instance = this;
         }
@@ -80,8 +76,8 @@ namespace ShopExpander
 
             if (!Main.dedServ)
             {
-                TextureAssets.Item[ArrowLeft.Item.type].Value = CropTexture(Main.textGlyphTexture[0], new Rectangle(4 * 28, 0, 28, 28));
-                TextureAssets.Item[ArrowRight.Item.type].Value = CropTexture(Main.textGlyphTexture[0], new Rectangle(5 * 28, 0, 28, 28));
+                TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
+                TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
                 textureSetupDone = true;
             }
         }
@@ -98,7 +94,7 @@ namespace ShopExpander
 
             Instance = null;
         }
-        
+
         public override object Call(params object[] args)
         {
             string command = args[0] as string;
@@ -127,7 +123,7 @@ namespace ShopExpander
                     if (args.Length % 3 != 2)
                         throw new ArgumentException("The number of arguments is incorrect (args.Length % 3 != 1) for " + CallApi.AddLegacyMultipageSetupMethods);
 
-                    var methods = new (string name, int priority, Action setup)[args.Length / 3]; 
+                    var methods = new (string name, int priority, Action setup)[args.Length / 3];
                     for (int i = 0; i < methods.Length; i++)
                     {
                         int offset = i * 3 + 2;
@@ -143,7 +139,7 @@ namespace ShopExpander
                     if (ActiveShop == null)
                         throw new InvalidOperationException($"No active shop, try calling {CallApi.ResetAndBindShop} first");
                     ActiveShop.AddPage(new ArrayProvider(AssertAndCast<string>(args, 1, CallApi.AddPageFromArray),
-                                                         AssertAndCast<int>(args, 2, CallApi.AddPageFromArray), 
+                                                         AssertAndCast<int>(args, 2, CallApi.AddPageFromArray),
                                                          AssertAndCast<Item[]>(args, 3, CallApi.AddPageFromArray)));
                     break;
 
@@ -171,12 +167,6 @@ namespace ShopExpander
             return casted;
         }
 
-        public override void UpdateUI(GameTime gameTime)
-        {
-            if (Main.npcShop == 0)
-                ActiveShop = null;
-        }
-
         private Texture2D CropTexture(Texture2D texture, Rectangle newBounds)
         {
             Texture2D newTexture = new Texture2D(Main.graphics.GraphicsDevice, newBounds.Width, newBounds.Height);
@@ -185,6 +175,13 @@ namespace ShopExpander
             texture.GetData(0, newBounds, data, 0, area);
             newTexture.SetData(data);
             return newTexture;
+        }
+
+        private Asset<Texture2D> TextureAsset(Texture2D texture) {
+            using MemoryStream stream = new(texture.Width * texture.Height);
+            texture.SaveAsPng(stream, texture.Width, texture.Height);
+            stream.Position = 0;
+            return Assets.CreateUntracked<Texture2D>(stream, ".png");
         }
     }
 }
