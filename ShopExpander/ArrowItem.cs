@@ -17,6 +17,8 @@ namespace ShopExpander
 
         public override string Name => CustomName;
 
+        protected override bool CloneNewInstances => true;
+
         public override void AutoStaticDefaults()
         {
             //Stop automatic texture and display name assignment

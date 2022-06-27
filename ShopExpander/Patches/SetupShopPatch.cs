@@ -4,9 +4,9 @@ using ShopExpander.Providers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using log4net;
 using Terraria;
 using Terraria.ModLoader;
+using HookList = Terraria.ModLoader.Core.HookList<Terraria.ModLoader.GlobalNPC>;
 
 namespace ShopExpander.Patches
 {
@@ -16,23 +16,29 @@ namespace ShopExpander.Patches
 
         private delegate void hook_SetupShop(orig_SetupShop orig, int type, Chest shop, ref int nextSlot);
 
-        private static GlobalNPC[] arr;
+        private static readonly FieldInfo HookSetupShopFieldInfo = typeof(NPCLoader).GetField("HookSetupShop", BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly FieldInfo globalNPCsArrayFieldInfo = typeof(NPCLoader).GetField("globalNPCsArray", BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly FieldInfo shopToNPCFieldInfo = typeof(NPCLoader).GetField("shopToNPC", BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo SetupShopMethodInfo = typeof(NPCLoader).GetMethod("SetupShop", BindingFlags.Public | BindingFlags.Static);
+
+        private static HookList HookSetupShop;
+        private static Instanced<GlobalNPC>[] globalNPCsArray;
         private static int[] shopToNpcs;
 
         private const int maxProvisionTries = 3;
 
         public static void Load()
         {
-            object hooklist = typeof(NPCLoader).GetField("HookSetupShop", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
-            arr = (GlobalNPC[])hooklist.GetType().GetField("arr", BindingFlags.Public | BindingFlags.Instance).GetValue(hooklist);
-            shopToNpcs = (int[])typeof(NPCLoader).GetField("shopToNPC", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            HookSetupShop = (HookList) HookSetupShopFieldInfo.GetValue(null);
+            globalNPCsArray = (Instanced<GlobalNPC>[]) globalNPCsArrayFieldInfo.GetValue(null);
+            shopToNpcs = (int[]) shopToNPCFieldInfo.GetValue(null);
 
-            HookEndpointManager.Add(typeof(NPCLoader).GetMethod("SetupShop", BindingFlags.Public | BindingFlags.Static), (hook_SetupShop)Prefix);
+            HookEndpointManager.Add(SetupShopMethodInfo, (hook_SetupShop) Prefix);
         }
 
         public static void Unload()
         {
-            arr = null;
+            HookSetupShop = null;
             shopToNpcs = null;
         }
 
@@ -59,7 +65,7 @@ namespace ShopExpander.Patches
                 }
             }
 
-            foreach (GlobalNPC globalNPC in arr)
+            foreach (GlobalNPC globalNPC in HookSetupShop.Enumerate(globalNPCsArray))
             {
                 if (ShopExpander.Instance.ModifierOverrides.GetValue(globalNPC))
                 {

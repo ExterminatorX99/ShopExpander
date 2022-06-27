@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ReLogic.Content;
 using Terraria;
 using Terraria.GameContent;
@@ -68,7 +69,6 @@ namespace ShopExpander
         {
             SetupShopPatch.Load();
             AddShopPatch.Load();
-            SetupShopNoDiscountPatch.Load();
             LeftRightClickPatch.Load();
 
             ArrowLeft.DisplayName.SetDefault("Previous page");
@@ -76,15 +76,31 @@ namespace ShopExpander
 
             if (!Main.dedServ)
             {
-                TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
-                TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
-                textureSetupDone = true;
+                RunOnMainThread(() =>
+                {
+                    TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
+                    TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
+                    textureSetupDone = true;
+                }).GetAwaiter().GetResult(); // Use this instead of 'Wait()' so stack trace is more useful
             }
+        }
+
+        // Exists in 'Main' on preview and July stable
+        // TODO: Remove when July stable releases
+        public static Task RunOnMainThread(Action action) {
+            var tcs = new TaskCompletionSource();
+
+            Main.QueueMainThreadAction(() => {
+                action();
+                tcs.SetResult();
+            });
+
+            return tcs.Task;
         }
 
         public override void Unload()
         {
-            Patches.SetupShopPatch.Unload();
+            SetupShopPatch.Unload();
 
             if (textureSetupDone)
             {

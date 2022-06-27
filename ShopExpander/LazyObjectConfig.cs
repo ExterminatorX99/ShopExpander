@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Terraria;
 
 namespace ShopExpander
 {
     public class LazyObjectConfig<T>
     {
-        private readonly ConditionalWeakTable<object, Ref<T>> config = new ConditionalWeakTable<object, Ref<T>>();
+        private readonly ConditionalWeakTable<object, Ref<T>> config = new();
         private readonly T defConfig;
 
         public LazyObjectConfig(T defConfig = default(T))
@@ -32,7 +27,5 @@ namespace ShopExpander
             else
                 return defConfig;
         }
-            
-        
     }
 }
