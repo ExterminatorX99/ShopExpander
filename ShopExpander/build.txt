@@ -1,5 +1,5 @@
 author = DRKV
-version = 1.1.2
+version = 1.2.0
 displayName = Shop Expander
 includePDB = false
 buildIgnore = .gitignore, .gitattributes, *.csproj*, *.sln, *.targets, .git/*, .vs/*, bin/*, obj/*, *.xcf, lib/ReLogic.dll, Properties/launchSettings.json
