@@ -44,8 +44,9 @@ namespace ShopExpander.Patches
 
         private static void Prefix(orig_SetupShop orig, int type, Chest shop, ref int nextSlot)
         {
+            var vanillaShop = shop.item;
             ShopExpander.Instance.ResetAndBindShop();
-            DynamicPageProvider dyn = new DynamicPageProvider(shop.item, null, ProviderPriority.Vanilla);
+            DynamicPageProvider dyn = new DynamicPageProvider(vanillaShop, null, ProviderPriority.Vanilla);
             List<GlobalNPC> modifiers = new List<GlobalNPC>();
 
             if (type < shopToNpcs.Length)
