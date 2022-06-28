@@ -6,20 +6,14 @@ namespace ShopExpander.Patches
     {
         public static void Load()
         {
-            On.Terraria.UI.ItemSlot.HandleShopSlot += PrefixLeft;
-            On.Terraria.UI.ItemSlot.HandleShopSlot += PrefixRight;
+            On.Terraria.UI.ItemSlot.HandleShopSlot += HandleShopSlot;
         }
 
-        private static void PrefixLeft(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
+        private static void HandleShopSlot(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
         {
-            if (leftClickIsValid && Main.mouseLeft && Main.mouseLeftRelease && ClickedPageArrow(inv, slot, false))
+            if (leftClickIsValid && Main.mouseLeft && ClickedPageArrow(inv, slot, false))
                 return;
 
-            orig(inv, slot, rightClickIsValid, leftClickIsValid);
-        }
-
-        private static void PrefixRight(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
-        {
             if (rightClickIsValid && Main.mouseRight && ClickedPageArrow(inv, slot, true))
                 return;
 
@@ -35,7 +29,7 @@ namespace ShopExpander.Patches
             {
                 if (skip)
                     ShopExpander.Instance.ActiveShop.MoveFirst();
-                else
+                else if (Main.mouseLeftRelease)
                     ShopExpander.Instance.ActiveShop.MoveLeft();
                 return true;
             }
@@ -44,7 +38,7 @@ namespace ShopExpander.Patches
             {
                 if (skip)
                     ShopExpander.Instance.ActiveShop.MoveLast();
-                else
+                else if (Main.mouseLeftRelease)
                     ShopExpander.Instance.ActiveShop.MoveRight();
                 return true;
             }
