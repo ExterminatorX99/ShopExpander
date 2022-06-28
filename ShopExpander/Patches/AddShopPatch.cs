@@ -14,15 +14,15 @@ namespace ShopExpander.Patches
             if (self != Main.instance.shop[Main.npcShop] || ShopExpander.Instance.ActiveShop == null)
                 return orig(self, newItem);
 
+            int stack = Main.shopSellbackHelper.Remove(newItem);
+
+            if (stack >= newItem.stack)
+                return 0;
+
             Item insertItem = newItem.Clone();
             insertItem.favorited = false;
             insertItem.buyOnce = true;
-            if (insertItem.value > 0)
-            {
-                insertItem.value /= 5;
-                if (insertItem.value < 1)
-                    insertItem.value = 1;
-            }
+            insertItem.stack -= stack;
 
             ShopExpander.Instance.Buyback.AddItem(insertItem);
             ShopExpander.Instance.ActiveShop.RefreshFrame();
