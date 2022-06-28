@@ -8,7 +8,7 @@ namespace SillyDaftMod
     {
         public override void SetupShop(int type, Chest shop, ref int nextSlot)
         {
-            if (type == NPCID.Dryad)
+            if (type == NPCID.Dryad && ModLoader.HasMod("ShopExpander"))
             {
                 for (int i = 0; i < nextSlot; i++)
                 {

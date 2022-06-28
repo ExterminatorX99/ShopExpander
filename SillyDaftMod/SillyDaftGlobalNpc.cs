@@ -11,7 +11,7 @@ namespace SillyDaftMod
         //(To allow this many items, the provision size was changed in SillyDaftMod.PostSetupContent)
         public override void SetupShop(int type, Chest shop, ref int nextSlot)
         {
-            if (type == NPCID.Dryad)
+            if (type == NPCID.Dryad && ModLoader.HasMod("ShopExpander"))
             {
                 for (int i = 0; i < ItemLoader.ItemCount; i++)
                 {

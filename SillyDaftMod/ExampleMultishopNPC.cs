@@ -35,8 +35,7 @@ namespace SillyDaftMod
             NPC.knockBackResist = 0.5f;
             AnimationType = NPCID.Guide;
 
-            Mod shopExpander = ModLoader.GetMod("ShopExpander");
-            if (shopExpander != null)
+            if (ModLoader.TryGetMod("ShopExpander", out var shopExpander))
             {
                 shopExpander.Call("AddLegacyMultipageSetupMethods", this,
                     "First Shop", 1, (Action)(() => shopNum = 1),
@@ -54,18 +53,19 @@ namespace SillyDaftMod
         public override void SetChatButtons(ref string button, ref string button2)
         {
             //If Shop Expander is loaded, don't need to set custom buttons.
-            if (ModLoader.GetMod("ShopExpander") != null)
+            if (ModLoader.HasMod("ShopExpander"))
             {
                 button = "Shop";
                 return;
             }
 
-            switch (ModContent.GetInstance<ExampleMultishopPerson>().shopNum)
+            button = shopNum switch
             {
-                case 1: button = "First Shop"; break;
-                case 2: button = "Second Shop"; break;
-                case 3: button = "Third Shop"; break;
-            }
+                1 => "First Shop",
+                2 => "Second Shop",
+                3 => "Third Shop",
+                _ => button
+            };
 
             button2 = "Change Shop";
         }
