@@ -12,30 +12,24 @@ namespace ShopExpander.Patches
 
         private static void PrefixLeft(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
         {
-            if (leftClickIsValid && Main.mouseLeft && Main.mouseLeftRelease)
-            {
-                if (Prefix(inv, slot, false))
-                    orig(inv, slot, rightClickIsValid, leftClickIsValid);
-            }
+            if (leftClickIsValid && Main.mouseLeft && Main.mouseLeftRelease && ClickedPageArrow(inv, slot, false))
+                return;
+
+            orig(inv, slot, rightClickIsValid, leftClickIsValid);
         }
 
         private static void PrefixRight(On.Terraria.UI.ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
         {
-            if (rightClickIsValid && Main.mouseRight)
-            {
-                if (Prefix(inv, slot, true))
-                    orig(inv, slot, rightClickIsValid, leftClickIsValid);
-            }
-            else
-            {
-                orig(inv, slot, rightClickIsValid, leftClickIsValid);
-            }
+            if (rightClickIsValid && Main.mouseRight && ClickedPageArrow(inv, slot, true))
+                return;
+
+            orig(inv, slot, rightClickIsValid, leftClickIsValid);
         }
 
-        private static bool Prefix(Item[] inv, int slot, bool skip)
+        private static bool ClickedPageArrow(Item[] inv, int slot, bool skip)
         {
             if (ShopExpander.Instance.ActiveShop == null)
-                return true;
+                return false;
 
             if (inv[slot].type == ShopExpander.Instance.ArrowLeft.Item.type)
             {
@@ -43,7 +37,7 @@ namespace ShopExpander.Patches
                     ShopExpander.Instance.ActiveShop.MoveFirst();
                 else
                     ShopExpander.Instance.ActiveShop.MoveLeft();
-                return false;
+                return true;
             }
 
             if (inv[slot].type == ShopExpander.Instance.ArrowRight.Item.type)
@@ -52,10 +46,10 @@ namespace ShopExpander.Patches
                     ShopExpander.Instance.ActiveShop.MoveLast();
                 else
                     ShopExpander.Instance.ActiveShop.MoveRight();
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
     }
 }
