@@ -104,8 +104,11 @@ namespace ShopExpander
 
             if (textureSetupDone)
             {
-                TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
-                TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
+                RunOnMainThread(() =>
+                {
+                    TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
+                    TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
+                }).GetAwaiter().GetResult(); // Use this instead of 'Wait()' so stack trace is more useful
             }
 
             Instance = null;
