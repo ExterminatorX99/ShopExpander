@@ -74,14 +74,6 @@ namespace ShopExpander
                     break;
             }
 
-            if (Main.LocalPlayer.discount)
-            {
-                for (int i = 1; i < itemNum; i++)
-                {
-                    CurrentFrame[i].value = (int)(CurrentFrame[i].value * 0.8f);
-                }
-            }
-
             for (int i = itemNum; i < FrameCapacity; i++)
             {
                 CurrentFrame[i + 1] = new Item();
