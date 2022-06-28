@@ -67,8 +67,8 @@ namespace ShopExpander
             int itemNum = 0;
             foreach (var item in pageProviders[providerIndex].GetPage(providerPageNum))
             {
-                CurrentFrame[itemNum + 1] = item.Clone();
-                CurrentFrame[itemNum + 1].isAShopItem = true;
+                CurrentFrame[itemNum + 1] = item;
+                item.isAShopItem = true;
                 itemNum++;
                 if (itemNum > FrameCapacity)
                     break;
@@ -131,8 +131,6 @@ namespace ShopExpander
                 CurrentFrame[Chest.maxItems - 1].SetDefaults(0);
                 CurrentFrame[Chest.maxItems - 1].ClearNameOverride();
             }
-
-
         }
 
         public IEnumerable<Item> GetAllItems()
