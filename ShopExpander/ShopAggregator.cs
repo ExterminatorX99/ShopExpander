@@ -68,6 +68,7 @@ namespace ShopExpander
             foreach (var item in pageProviders[providerIndex].GetPage(providerPageNum))
             {
                 CurrentFrame[itemNum + 1] = item.Clone();
+                CurrentFrame[itemNum + 1].isAShopItem = true;
                 itemNum++;
                 if (itemNum > FrameCapacity)
                     break;
