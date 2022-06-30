@@ -1,8 +1,8 @@
 author = DRKV and Exterminator
-version = 1.2.0
+version = 1.2.1
 displayName = Shop Expander
-includePDB = false
 hideCode = false
 hideResources = false
 includeSource = true
-homepage = https://forums.terraria.org/index.php?threads/shop-expander.78272/
+includePDB = true
+homepage = https://github.com/ExterminatorX99/ShopExpander
