@@ -1,10 +1,23 @@
-Shop expander aims to solve a problem encountered by many players using multiple large mods. Town NPCs have a limited amount of free shop inventory space. When multiple different mods add items to a single vanilla NPC's shop, it can overflow, causing any additional items to not show up. The issue is further compounded by the fact that some items might be added to the same shop by multiple different mods, resulting in wasted slots.
+Shop expander aims to solve a problem encountered by many players using multiple large mods.
+Town NPCs have a limited amount of free shop inventory space.
+When multiple different mods add items to a single vanilla NPC's shop, it can overflow, causing any additional items to not show up.
+The issue is further compounded by the fact that some items might be added to the same shop by multiple different mods, resulting in wasted slots.
 
-This mod solves the problem, by modifying tModLoader's shop setup process. It provides each mod with a new empty inventory to put items in, then combines the inventories. This new Expanded shop is then divided into pages for displaying. As a bonus, you also get a full 28 slot empty page for the buyback buffer.
+This mod solves the problem, by modifying tModLoader's shop setup process.
+It provides each mod with a new empty inventory to put items in, then combines the inventories.
+This new Expanded shop is then divided into pages for displaying.
+As a bonus, you also get a full 28 slot empty page for the buyback buffer.
 
 For more game-play info visit the mod's home page.
 
 Changelog:
+
+v2.0.0
+- Bug fixes
+- Internal refactor
+- New cross mod api
+- Allow mods to add custom shop pages
+- Switch from Harmony to MonoMod
 
 v1.1.2
 - Fixed multiplayer issues
