@@ -1,10 +1,8 @@
-author = DRKV
+author = DRKV and Exterminator
 version = 1.2.0
 displayName = Shop Expander
 includePDB = false
-buildIgnore = .gitignore, .gitattributes, *.csproj*, *.sln, *.targets, .git/*, .vs/*, bin/*, obj/*, *.xcf, lib/ReLogic.dll, Properties/launchSettings.json
 hideCode = false
 hideResources = false
 includeSource = true
 homepage = https://forums.terraria.org/index.php?threads/shop-expander.78272/
-side = Both

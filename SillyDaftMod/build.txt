@@ -1,8 +1,7 @@
-author = DRKV
+author = DRKV and Exterminator
 version = 0.1
 displayName = Silly Daft Mod (Shop Expander Demo)
 includePDB = false
-buildIgnore = .gitignore, .gitattributes, *.csproj*, *.sln, *.targets, .git/*, .vs/*, bin/*, obj/*, *.xcf, lib/ReLogic.dll, Properties/launchSettings.json
 hideCode = false
 hideResources = false
 includeSource = true
