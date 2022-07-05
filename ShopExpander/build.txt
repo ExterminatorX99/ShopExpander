@@ -1,5 +1,5 @@
 author = DRKV and Exterminator
-version = 1.2.2
+version = 1.2.3
 displayName = Shop Expander
 hideCode = false
 hideResources = false

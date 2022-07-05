@@ -12,8 +12,12 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.2.3:
+- Fix attempt #2 for vanilla painter shop overflow bug.
+- Increase default allowed shop size to 80.
+
 v1.2.2:
-- Increased default shop size to 60(vanilla is 40) to prevent vanilla painter shop issues.
+- Increased default allowed shop size to 60(vanilla is 40) in an attempt to fix vanilla painter shop issues.
 Also allows mods to be more liberal with adding items without needing mod calls.
 
 v1.2.0

@@ -8,6 +8,8 @@ namespace ShopExpander
         private readonly ConditionalWeakTable<object, Ref<T>> config = new();
         private readonly T defConfig;
 
+        public T DefaultValue => defConfig;
+
         public LazyObjectConfig(T defConfig = default(T))
         {
             this.defConfig = defConfig;
