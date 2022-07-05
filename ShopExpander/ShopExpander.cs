@@ -35,7 +35,7 @@ namespace ShopExpander
         public ShopAggregator ActiveShop { get; internal set; }
         public readonly CircularBufferProvider Buyback = new CircularBufferProvider("Buyback", ProviderPriority.Buyback);
 
-        public readonly LazyObjectConfig<int> ProvisionOverrides = new LazyObjectConfig<int>(40);
+        public readonly LazyObjectConfig<int> ProvisionOverrides = new LazyObjectConfig<int>(80);
         public readonly LazyObjectConfig<bool> ModifierOverrides = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> NoDistinctOverrides = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> IgnoreErrors = new LazyObjectConfig<bool>(false);
