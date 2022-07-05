@@ -17,12 +17,12 @@ namespace ShopExpander.Patches
         private delegate void hook_SetupShop(orig_SetupShop orig, int type, Chest shop, ref int nextSlot);
 
         private static readonly FieldInfo HookSetupShopFieldInfo = typeof(NPCLoader).GetField("HookSetupShop", BindingFlags.NonPublic | BindingFlags.Static);
-        private static readonly FieldInfo globalNPCsArrayFieldInfo = typeof(NPCLoader).GetField("globalNPCsArray", BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly FieldInfo globalNPCsFieldInfo = typeof(NPCLoader).GetField("globalNPCs", BindingFlags.NonPublic | BindingFlags.Static);
         private static readonly FieldInfo shopToNPCFieldInfo = typeof(NPCLoader).GetField("shopToNPC", BindingFlags.NonPublic | BindingFlags.Static);
-        private static readonly MethodInfo SetupShopMethodInfo = typeof(NPCLoader).GetMethod("SetupShop", BindingFlags.Public | BindingFlags.Static);
+        private static readonly MethodInfo SetupShopMethodInfo = typeof(NPCLoader).GetMethod(nameof(NPCLoader.SetupShop), BindingFlags.Public | BindingFlags.Static);
 
         private static HookList HookSetupShop;
-        private static Instanced<GlobalNPC>[] globalNPCsArray;
+        private static List<GlobalNPC> globalNPCsArray;
         private static int[] shopToNpcs;
 
         private const int maxProvisionTries = 3;
@@ -30,7 +30,7 @@ namespace ShopExpander.Patches
         public static void Load()
         {
             HookSetupShop = (HookList) HookSetupShopFieldInfo.GetValue(null);
-            globalNPCsArray = (Instanced<GlobalNPC>[]) globalNPCsArrayFieldInfo.GetValue(null);
+            globalNPCsArray = (List<GlobalNPC>) globalNPCsFieldInfo.GetValue(null);
             shopToNpcs = (int[]) shopToNPCFieldInfo.GetValue(null);
 
             HookEndpointManager.Add(SetupShopMethodInfo, (hook_SetupShop) Prefix);
