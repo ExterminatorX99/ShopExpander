@@ -10,8 +10,6 @@ namespace ShopExpander.Patches
 	{
 		public static Mod Mod { get; private set; } = null!;
 
-		private static Item[] cachedItems { get; set; }
-
 		public void Load(Mod mod)
 		{
 			Mod = mod;
@@ -56,7 +54,6 @@ namespace ShopExpander.Patches
 				i => i.MatchCeq(),
 				i => i.MatchStloc(out _),
 				i => i.MatchLdarg(out _),
-				i => i.MatchLdfld(out _),
 			};
 
 			if (!c.TryGotoNext(MoveType.After, instrs1))
@@ -67,11 +64,9 @@ namespace ShopExpander.Patches
 
 			Mod.Logger.Info("Increasing vanilla shop size");
 
-			c.EmitDelegate((Item[] items) =>
-			{
-				cachedItems = items;
-				return new Item[ShopExpander.Instance.ProvisionOverrides.DefaultValue];
-			});
+			c.Emit(OpCodes.Dup);
+			c.EmitDelegate(() => new Item[ShopExpander.Instance.ProvisionOverrides.DefaultValue]);
+			c.Emit<Chest>(OpCodes.Stfld, nameof(Chest.item));
 
 			/*
 			 * IL_0039: ldloc.s 4
