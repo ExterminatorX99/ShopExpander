@@ -6,12 +6,11 @@ namespace ShopExpander
     public class LazyObjectConfig<T>
     {
         private readonly ConditionalWeakTable<object, Ref<T>> config = new();
-
-        public T DefaultValue { get; }
+        private readonly T defConfig;
 
         public LazyObjectConfig(T defConfig = default(T))
         {
-            DefaultValue = defConfig;
+            this.defConfig = defConfig;
         }
 
         public void SetValue(object obj, T value)
@@ -26,7 +25,7 @@ namespace ShopExpander
             if (config.TryGetValue(obj, out value))
                 return value.Value;
             else
-                return DefaultValue;
+                return defConfig;
         }
     }
 }

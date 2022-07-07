@@ -12,6 +12,9 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.2.5:
+- Revert to v1.2.0
+
 v1.2.4:
 - Maybe fix issues caused by previous version.
 
