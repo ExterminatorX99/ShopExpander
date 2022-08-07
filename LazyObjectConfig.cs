@@ -1,13 +1,13 @@
-﻿namespace ShopExpander;
+namespace ShopExpander;
 
 using System.Runtime.CompilerServices;
 
 public class LazyObjectConfig<T>
 {
     private readonly ConditionalWeakTable<object, Ref<T>> _config = new();
-    private readonly T _defaultConfig;
+    private readonly T? _defaultConfig;
 
-    public LazyObjectConfig(T defaultConfig = default)
+    public LazyObjectConfig(T? defaultConfig = default)
     {
         _defaultConfig = defaultConfig;
     }
@@ -18,7 +18,7 @@ public class LazyObjectConfig<T>
         valueRef.Value = value;
     }
 
-    public T GetValue(object obj)
+    public T? GetValue(object obj)
     {
         if (_config.TryGetValue(obj, out var value))
         {

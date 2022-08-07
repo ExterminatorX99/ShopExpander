@@ -1,4 +1,4 @@
-﻿using HookList = Terraria.ModLoader.Core.HookList<Terraria.ModLoader.GlobalNPC>;
+using HookList = Terraria.ModLoader.Core.HookList<Terraria.ModLoader.GlobalNPC>;
 
 namespace ShopExpander.Patches;
 
@@ -7,6 +7,10 @@ using Providers;
 
 internal static class SetupShopPatch
 {
+    public delegate void orig_SetupShop(int type, Chest shop, ref int nextSlot);
+
+    public delegate void hook_SetupShop(orig_SetupShop orig, int type, Chest shop, ref int nextSlot);
+
     private const int maxProvisionTries = 3;
 
     private static readonly FieldInfo HookSetupShopFieldInfo = typeof(NPCLoader).GetField("HookSetupShop", BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -97,17 +101,28 @@ internal static class SetupShopPatch
 
     private static void DoSetupFor(Chest shop, DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)
     {
+        ArgumentNullException.ThrowIfNull(shop);
+        ArgumentNullException.ThrowIfNull(mainDyn);
+        ArgumentNullException.ThrowIfNull(typeText);
+        ArgumentNullException.ThrowIfNull(mod);
+        ArgumentNullException.ThrowIfNull(obj);
+        ArgumentNullException.ThrowIfNull(setup);
+
+        Debug.Assert(ShopExpanderMod.ActiveShop is not null);
+
         try
         {
             var methods = ShopExpanderMod.LegacyMultipageSetupMethods.GetValue(obj);
             if (methods != null)
             {
-                foreach (var item in methods)
+                foreach (var (name, priority, action) in methods)
                 {
-                    var dynPage = new DynamicPageProvider(shop.item, item.name, item.priority);
+                    var dynPage = new DynamicPageProvider(shop.item, name, priority);
                     ShopExpanderMod.ActiveShop.AddPage(dynPage);
-                    item.setup?.Invoke();
+
+                    action?.Invoke();
                     DoSetupSingle(dynPage, obj, setup);
+
                     dynPage.Compose();
                 }
             }
@@ -132,7 +147,7 @@ internal static class SetupShopPatch
         while (retry)
         {
             retry = false;
-            Chest provision = null;
+            Chest? provision = null;
             try
             {
                 provision = ProvisionChest(dyn, obj, sizeToTry);
@@ -171,7 +186,7 @@ internal static class SetupShopPatch
         return MakeFakeChest(dyn.Provision(size, ShopExpanderMod.NoDistinctOverrides.GetValue(target), ShopExpanderMod.VanillaCopyOverrrides.GetValue(target)));
     }
 
-    private static void LogAndPrint(string type, Mod mod, object obj, Exception e)
+    private static void LogAndPrint(string type, Mod? mod, object obj, Exception e)
     {
         if (ShopExpanderMod.IgnoreErrors.GetValue(obj))
         {
@@ -181,12 +196,12 @@ internal static class SetupShopPatch
         ShopExpanderMod.IgnoreErrors.SetValue(obj, true);
 
         var modName = "N/A";
-        if (mod != null && mod.DisplayName != null)
+        if (mod is { DisplayName: { } displayName })
         {
-            modName = mod.DisplayName;
+            modName = displayName;
         }
 
-        var message = string.Format("Shop Expander failed to load {0} from mod {1}.", type, modName);
+        var message = $"Shop Expander failed to load {type} from mod {modName}.";
         Main.NewText(message, Color.Red);
         Main.NewText("See log for more info. If this error persists, please consider reporting it to the author of the mod mentioned above.", Color.Red);
         var logger = ShopExpanderMod.Instance.Logger;
@@ -195,8 +210,4 @@ internal static class SetupShopPatch
         logger.Error(e.ToString());
         logger.Error("--- END SHOP EXPANDER ERROR ---");
     }
-
-    private delegate void orig_SetupShop(int type, Chest shop, ref int nextSlot);
-
-    private delegate void hook_SetupShop(orig_SetupShop orig, int type, Chest shop, ref int nextSlot);
 }

@@ -1,17 +1,19 @@
-﻿namespace ShopExpander.Providers;
+namespace ShopExpander.Providers;
 
 public class DynamicPageProvider : ArrayProvider
 {
-    private readonly List<ProvisionedSegment> provisions = new();
-    private readonly Item[] vanillaShop;
-    private readonly Item[] vanillaShopCopy;
+    private readonly List<ProvisionedSegment> _provisions = new();
+    private readonly Item[] _vanillaShop;
+    private readonly Item[] _vanillaShopCopy;
 
-    public DynamicPageProvider(string name, int priority) : this(new Item[0], name, priority) { }
+    public DynamicPageProvider(string? name, int priority) : this(Array.Empty<Item>(), name, priority) { }
 
-    public DynamicPageProvider(Item[] vanillaShop, string name, int priority) : base(name, priority, new Item[0])
+    public DynamicPageProvider(Item[] vanillaShop, string? name, int priority) : base(name, priority, Array.Empty<Item>())
     {
-        this.vanillaShop = vanillaShop;
-        vanillaShopCopy = vanillaShop.Where(x => !x.IsAir).Select(x => x.Clone()).ToArray();
+        ArgumentNullException.ThrowIfNull(vanillaShop);
+
+        _vanillaShop = vanillaShop;
+        _vanillaShopCopy = vanillaShop.Where(x => !x.IsAir).Select(x => x.Clone()).ToArray();
         FixNumPages();
     }
 
@@ -20,65 +22,85 @@ public class DynamicPageProvider : ArrayProvider
         var items = new ProvisionedSegment(capacity, noDistinct);
         if (vanillaCopy)
         {
-            for (var i = 0; i < vanillaShopCopy.Length; i++)
+            for (var i = 0; i < _vanillaShopCopy.Length; i++)
             {
-                items.items[i] = vanillaShopCopy[i].Clone();
+                items.Items[i] = _vanillaShopCopy[i].Clone();
             }
         }
 
-        provisions.Add(items);
-        return items.items;
+        _provisions.Add(items);
+        return items.Items;
     }
 
     public void UnProvision(Item[] items)
     {
-        provisions.RemoveAll(x => x.items == items);
+        _provisions.RemoveAll(x => x.Items == items);
     }
 
     public void Compose()
     {
         ExtendedItems = ExtendedItems.Concat(
-                vanillaShop.Where(x => !x.IsAir))
+                _vanillaShop.Where(x => !x.IsAir))
             .Concat(
-                provisions.Where(x => !x.noDistinct)
-                    .SelectMany(x => x.items.Where(y => !y.IsAir)))
+                _provisions.Where(x => !x.NoDistinct)
+                    .SelectMany(x => x.Items.Where(y => !y.IsAir)))
             .Distinct(new ItemSameType())
             .Concat(
-                provisions.Where(x => x.noDistinct)
-                    .SelectMany(x => x.items.Where(y => !y.IsAir)))
+                _provisions.Where(x => x.NoDistinct)
+                    .SelectMany(x => x.Items.Where(y => !y.IsAir)))
             .ToArray();
 
         FixNumPages();
-        provisions.Clear();
+        _provisions.Clear();
     }
 
-    private struct ProvisionedSegment
+    private class ProvisionedSegment
     {
-        public readonly Item[] items;
-        public readonly bool noDistinct;
+        public Item[] Items { get; }
+        public bool NoDistinct { get; }
 
         public ProvisionedSegment(int size, bool noDistinct)
         {
-            items = new Item[size];
+            Items = new Item[size];
             for (var i = 0; i < size; i++)
             {
-                items[i] = new Item();
+                Items[i] = new Item();
             }
 
-            this.noDistinct = noDistinct;
+            NoDistinct = noDistinct;
         }
     }
 
     private class ItemSameType : IEqualityComparer<Item>
     {
-        public bool Equals(Item x, Item y)
+        public bool Equals(Item? x, Item? y)
         {
-            return x.Name == y.Name && x.type == y.type;
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(x, null))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(y, null))
+            {
+                return false;
+            }
+
+            if (x.GetType() != y.GetType())
+            {
+                return false;
+            }
+
+            return x.type == y.type && x.Name == y.Name;
         }
 
         public int GetHashCode(Item obj)
         {
-            return obj.Name.GetHashCode() ^ obj.type.GetHashCode();
+            return HashCode.Combine(obj.type, obj.Name);
         }
     }
 }

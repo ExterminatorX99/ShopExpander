@@ -1,4 +1,4 @@
-﻿namespace ShopExpander.Providers;
+namespace ShopExpander.Providers;
 
 public class CircularBufferProvider : IShopPageProvider
 {
@@ -8,6 +8,8 @@ public class CircularBufferProvider : IShopPageProvider
 
     public CircularBufferProvider(string name, int priority)
     {
+        ArgumentNullException.ThrowIfNull(name);
+
         Name = name;
         Priority = priority;
         for (var i = 0; i < items.Length; i++)

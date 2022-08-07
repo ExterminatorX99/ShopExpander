@@ -1,18 +1,20 @@
-﻿namespace ShopExpander.Providers;
+namespace ShopExpander.Providers;
 
 public class ArrayProvider : IShopPageProvider
 {
     public Item[] ExtendedItems { get; protected set; }
 
-    public ArrayProvider(string name, int priority, Item[] items)
+    public ArrayProvider(string? name, int priority, Item[] items)
     {
+        ArgumentNullException.ThrowIfNull(items);
+
         Name = name;
         Priority = priority;
         ExtendedItems = items;
         FixNumPages();
     }
 
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public int Priority { get; set; }
     public int NumPages { get; private set; }
 

@@ -1,3 +1,5 @@
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
 global using System.Reflection;
 global using Microsoft.Xna.Framework;
 global using Microsoft.Xna.Framework.Graphics;

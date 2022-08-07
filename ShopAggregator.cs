@@ -1,4 +1,4 @@
-﻿namespace ShopExpander;
+namespace ShopExpander;
 
 using Providers;
 
@@ -6,8 +6,8 @@ public class ShopAggregator
 {
     public const int FrameCapacity = 38;
 
-    private readonly List<IShopPageProvider> pageProviders = new();
-    private int currPage;
+    private readonly List<IShopPageProvider> _pageProviders = new();
+    private int _currPage;
 
     public Item[] CurrentFrame { get; }
 
@@ -24,17 +24,17 @@ public class ShopAggregator
 
     public void AddPage(IShopPageProvider pageProvider)
     {
-        pageProviders.Add(pageProvider);
-        pageProviders.Sort((x, y) => x.Priority - y.Priority);
+        _pageProviders.Add(pageProvider);
+        _pageProviders.Sort((x, y) => x.Priority - y.Priority);
     }
 
     public void RefreshFrame()
     {
-        var numPages = pageProviders.Sum(x => x.NumPages);
+        var numPages = _pageProviders.Sum(x => x.NumPages);
 
         if (numPages == 0)
         {
-            currPage = 0;
+            _currPage = 0;
             for (var i = 0; i < Chest.maxItems; i++)
             {
                 CurrentFrame[i] = new Item();
@@ -43,31 +43,31 @@ public class ShopAggregator
             return;
         }
 
-        if (currPage < 0)
+        if (_currPage < 0)
         {
-            currPage = 0;
+            _currPage = 0;
         }
 
-        if (currPage >= numPages)
+        if (_currPage >= numPages)
         {
-            currPage = numPages - 1;
+            _currPage = numPages - 1;
         }
 
-        var providerPageNum = currPage;
+        var providerPageNum = _currPage;
         var providerIndex = 0;
-        while (providerIndex < pageProviders.Count && pageProviders[providerIndex].NumPages <= providerPageNum)
+        while (providerIndex < _pageProviders.Count && _pageProviders[providerIndex].NumPages <= providerPageNum)
         {
-            providerPageNum -= pageProviders[providerIndex].NumPages;
+            providerPageNum -= _pageProviders[providerIndex].NumPages;
             providerIndex++;
         }
 
-        if (providerPageNum >= pageProviders[providerIndex].NumPages)
+        if (providerPageNum >= _pageProviders[providerIndex].NumPages)
         {
             return;
         }
 
         var itemNum = 0;
-        foreach (var item in pageProviders[providerIndex].GetPage(providerPageNum))
+        foreach (var item in _pageProviders[providerIndex].GetPage(providerPageNum))
         {
             CurrentFrame[itemNum + 1] = item;
             item.isAShopItem = true;
@@ -88,14 +88,14 @@ public class ShopAggregator
         if (prevPageNum < 0)
         {
             prevPage--;
-            while (prevPage >= 0 && pageProviders[prevPage].NumPages <= 0)
+            while (prevPage >= 0 && _pageProviders[prevPage].NumPages <= 0)
             {
                 prevPage--;
             }
 
             if (prevPage >= 0)
             {
-                prevPageNum = pageProviders[prevPage].NumPages - 1;
+                prevPageNum = _pageProviders[prevPage].NumPages - 1;
             }
         }
 
@@ -103,7 +103,7 @@ public class ShopAggregator
         {
             CurrentFrame[0].SetDefaults(ShopExpanderMod.ArrowLeft.Item.type);
             CurrentFrame[0].ClearNameOverride();
-            CurrentFrame[0].SetNameOverride(CurrentFrame[0].Name + GetPageHintText(pageProviders[prevPage], prevPageNum));
+            CurrentFrame[0].SetNameOverride(CurrentFrame[0].Name + GetPageHintText(_pageProviders[prevPage], prevPageNum));
         }
         else
         {
@@ -113,10 +113,10 @@ public class ShopAggregator
 
         var nextPage = providerIndex;
         var nextPageNum = providerPageNum + 1;
-        if (nextPageNum >= pageProviders[nextPage].NumPages)
+        if (nextPageNum >= _pageProviders[nextPage].NumPages)
         {
             nextPage++;
-            while (nextPage < pageProviders.Count && pageProviders[nextPage].NumPages <= 0)
+            while (nextPage < _pageProviders.Count && _pageProviders[nextPage].NumPages <= 0)
             {
                 nextPage++;
             }
@@ -124,11 +124,11 @@ public class ShopAggregator
             nextPageNum = 0;
         }
 
-        if (nextPage < pageProviders.Count)
+        if (nextPage < _pageProviders.Count)
         {
             CurrentFrame[Chest.maxItems - 1].SetDefaults(ShopExpanderMod.ArrowRight.Item.type);
             CurrentFrame[Chest.maxItems - 1].ClearNameOverride();
-            CurrentFrame[Chest.maxItems - 1].SetNameOverride(CurrentFrame[Chest.maxItems - 1].Name + GetPageHintText(pageProviders[nextPage], nextPageNum));
+            CurrentFrame[Chest.maxItems - 1].SetNameOverride(CurrentFrame[Chest.maxItems - 1].Name + GetPageHintText(_pageProviders[nextPage], nextPageNum));
         }
         else
         {
@@ -139,7 +139,7 @@ public class ShopAggregator
 
     public IEnumerable<Item> GetAllItems()
     {
-        foreach (var provider in pageProviders)
+        foreach (var provider in _pageProviders)
         {
             for (var i = 0; i < provider.NumPages; i++)
             {
@@ -156,40 +156,37 @@ public class ShopAggregator
 
     public void MoveLeft()
     {
-        currPage--;
+        _currPage--;
         RefreshFrame();
     }
 
     public void MoveRight()
     {
-        currPage++;
+        _currPage++;
         RefreshFrame();
     }
 
     public void MoveFirst()
     {
-        currPage = 0;
+        _currPage = 0;
         RefreshFrame();
     }
 
     public void MoveLast()
     {
-        currPage = int.MaxValue;
+        _currPage = int.MaxValue;
         RefreshFrame();
     }
 
-    private string GetPageHintText(IShopPageProvider provider, int page)
+    private static string GetPageHintText(IShopPageProvider provider, int page)
     {
-        if (provider.Name == null)
+        if (provider.Name is null)
         {
             return "";
         }
 
-        if (provider.NumPages == 1)
-        {
-            return string.Format(" ({0})", provider.Name);
-        }
-
-        return string.Format(" ({0} {1}/{2})", provider.Name, page, provider.NumPages);
+        return provider.NumPages == 1
+            ? $" ({provider.Name})"
+            : $" ({provider.Name} {page}/{provider.NumPages})";
     }
 }

@@ -10,19 +10,20 @@ public class ShopExpanderMod : Mod
     public static readonly LazyObjectConfig<bool> NoDistinctOverrides = new();
     public static readonly LazyObjectConfig<bool> IgnoreErrors = new();
     public static readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new(true);
-    public static readonly LazyObjectConfig<(string name, int priority, Action setup)[]> LegacyMultipageSetupMethods = new();
+    public static readonly LazyObjectConfig<(string name, int priority, Action? setup)[]> LegacyMultipageSetupMethods = new();
 
-    private static bool textureSetupDone;
+    private static bool _textureSetupDone;
 
     public static ShopExpanderMod Instance => ModContent.GetInstance<ShopExpanderMod>();
 
-    public static CircularBufferProvider Buyback { get; private set; }
+    public static CircularBufferProvider Buyback { get; private set; } = null!;
 
-    public static ModItem ArrowLeft { get; private set; }
-    public static ModItem ArrowRight { get; private set; }
+    public static ModItem ArrowLeft { get; private set; } = null!;
+    public static ModItem ArrowRight { get; private set; } = null!;
 
-    public static ShopAggregator ActiveShop { get; private set; }
+    public static ShopAggregator? ActiveShop { get; private set; }
 
+    [MemberNotNull(nameof(ActiveShop))]
     public static void ResetAndBindShop()
     {
         ActiveShop = new ShopAggregator();
@@ -54,7 +55,7 @@ public class ShopExpanderMod : Mod
                 {
                     TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
                     TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
-                    textureSetupDone = true;
+                    _textureSetupDone = true;
                 })
                 .GetAwaiter()
                 .GetResult(); // Use this instead of 'Wait()' so stack trace is more useful
@@ -65,7 +66,7 @@ public class ShopExpanderMod : Mod
     {
         SetupShopPatch.Unload();
 
-        if (textureSetupDone)
+        if (_textureSetupDone)
         {
             Main.RunOnMainThread(() =>
                 {
@@ -77,10 +78,9 @@ public class ShopExpanderMod : Mod
         }
     }
 
-    public override object Call(params object[] args)
+    public override object? Call(params object[] args)
     {
-        var command = args[0] as string;
-        if (command == null)
+        if (args[0] is not string command)
         {
             throw new ArgumentException("first argument must be string");
         }
@@ -109,7 +109,7 @@ public class ShopExpanderMod : Mod
                     throw new ArgumentException("The number of arguments is incorrect (args.Length % 3 != 1) for " + CallApi.AddLegacyMultipageSetupMethods);
                 }
 
-                var methods = new (string name, int priority, Action setup)[args.Length / 3];
+                var methods = new (string name, int priority, Action? setup)[args.Length / 3];
                 for (var i = 0; i < methods.Length; i++)
                 {
                     var offset = (i * 3) + 2;
