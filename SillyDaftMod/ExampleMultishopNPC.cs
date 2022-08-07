@@ -1,112 +1,113 @@
-﻿using System;
+﻿namespace SillyDaftMod;
+
+using System;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace SillyDaftMod
+[AutoloadHead]
+internal class ExampleMultishopPerson : ModNPC
 {
-    [AutoloadHead]
-    internal class ExampleMultishopPerson : ModNPC
+    private int shopNum = 1;
+
+    public override void SetStaticDefaults()
     {
-        private int shopNum = 1;
+        DisplayName.SetDefault("Example Multishop Person");
+        Main.npcFrameCount[NPC.type] = 25;
+        NPCID.Sets.ExtraFramesCount[NPC.type] = 9;
+        NPCID.Sets.AttackFrameCount[NPC.type] = 4;
+        NPCID.Sets.DangerDetectRange[NPC.type] = 700;
+        NPCID.Sets.HatOffsetY[NPC.type] = 4;
+    }
 
-        public override void SetStaticDefaults()
+    public override void SetDefaults()
+    {
+        NPC.townNPC = true;
+        NPC.friendly = true;
+        NPC.width = 18;
+        NPC.height = 40;
+        NPC.aiStyle = 7;
+        NPC.damage = 10;
+        NPC.defense = 15;
+        NPC.lifeMax = 250;
+        NPC.HitSound = SoundID.NPCHit1;
+        NPC.DeathSound = SoundID.NPCDeath1;
+        NPC.knockBackResist = 0.5f;
+        AnimationType = NPCID.Guide;
+
+        if (ModLoader.TryGetMod("ShopExpander", out var shopExpander))
         {
-            DisplayName.SetDefault("Example Multishop Person");
-            Main.npcFrameCount[NPC.type] = 25;
-            NPCID.Sets.ExtraFramesCount[NPC.type] = 9;
-            NPCID.Sets.AttackFrameCount[NPC.type] = 4;
-            NPCID.Sets.DangerDetectRange[NPC.type] = 700;
-            NPCID.Sets.HatOffsetY[NPC.type] = 4;
+            shopExpander.Call("AddLegacyMultipageSetupMethods", this,
+                "First Shop", 1, (Action)(() => shopNum = 1),
+                "Second Shop", 2, (Action)(() => shopNum = 2),
+                "Third Shop", 3, (Action)(() => shopNum = 3)
+            );
+        }
+    }
+
+    public override string GetChat()
+    {
+        return "I offer multiple different pages of shop content.";
+    }
+
+    public override void SetChatButtons(ref string button, ref string button2)
+    {
+        //If Shop Expander is loaded, don't need to set custom buttons.
+        if (ModLoader.HasMod("ShopExpander"))
+        {
+            button = "Shop";
+            return;
         }
 
-        public override void SetDefaults()
+        button = shopNum switch
         {
-            NPC.townNPC = true;
-            NPC.friendly = true;
-            NPC.width = 18;
-            NPC.height = 40;
-            NPC.aiStyle = 7;
-            NPC.damage = 10;
-            NPC.defense = 15;
-            NPC.lifeMax = 250;
-            NPC.HitSound = SoundID.NPCHit1;
-            NPC.DeathSound = SoundID.NPCDeath1;
-            NPC.knockBackResist = 0.5f;
-            AnimationType = NPCID.Guide;
+            1 => "First Shop",
+            2 => "Second Shop",
+            3 => "Third Shop",
+            _ => button,
+        };
 
-            if (ModLoader.TryGetMod("ShopExpander", out var shopExpander))
+        button2 = "Change Shop";
+    }
+
+    public override void OnChatButtonClicked(bool firstButton, ref bool shop)
+    {
+        if (firstButton)
+        {
+            shop = true;
+        }
+        else
+        {
+            shop = false;
+            var npc = ModContent.GetInstance<ExampleMultishopPerson>();
+            if (++npc.shopNum > 3)
             {
-                shopExpander.Call("AddLegacyMultipageSetupMethods", this,
-                    "First Shop", 1, (Action)(() => shopNum = 1),
-                    "Second Shop", 2, (Action)(() => shopNum = 2),
-                    "Third Shop", 3, (Action)(() => shopNum = 3)
-                );
+                npc.shopNum = 1;
             }
         }
+    }
 
-        public override string GetChat()
+    public override void SetupShop(Chest shop, ref int nextSlot)
+    {
+        switch (shopNum)
         {
-            return "I offer multiple different pages of shop content.";
-        }
+            case 1:
+                shop.item[nextSlot++].SetDefaults(ItemID.DirtBlock);
+                shop.item[nextSlot++].SetDefaults(ItemID.StoneBlock);
+                shop.item[nextSlot++].SetDefaults(ItemID.Wood);
+                break;
 
-        public override void SetChatButtons(ref string button, ref string button2)
-        {
-            //If Shop Expander is loaded, don't need to set custom buttons.
-            if (ModLoader.HasMod("ShopExpander"))
-            {
-                button = "Shop";
-                return;
-            }
+            case 2:
+                shop.item[nextSlot++].SetDefaults(ItemID.LesserHealingPotion);
+                shop.item[nextSlot++].SetDefaults(ItemID.LesserManaPotion);
+                shop.item[nextSlot++].SetDefaults(ItemID.LesserRestorationPotion);
+                break;
 
-            button = shopNum switch
-            {
-                1 => "First Shop",
-                2 => "Second Shop",
-                3 => "Third Shop",
-                _ => button
-            };
-
-            button2 = "Change Shop";
-        }
-
-        public override void OnChatButtonClicked(bool firstButton, ref bool shop)
-        {
-            if (firstButton)
-            {
-                shop = true;
-            }
-            else
-            {
-                shop = false;
-                ExampleMultishopPerson npc = ModContent.GetInstance<ExampleMultishopPerson>();
-                if (++npc.shopNum > 3)
-                    npc.shopNum = 1;
-            }
-        }
-
-        public override void SetupShop(Chest shop, ref int nextSlot)
-        {
-            switch (shopNum)
-            {
-                case 1:
-                    shop.item[nextSlot++].SetDefaults(ItemID.DirtBlock);
-                    shop.item[nextSlot++].SetDefaults(ItemID.StoneBlock);
-                    shop.item[nextSlot++].SetDefaults(ItemID.Wood);
-                    break;
-
-                case 2:
-                    shop.item[nextSlot++].SetDefaults(ItemID.LesserHealingPotion);
-                    shop.item[nextSlot++].SetDefaults(ItemID.LesserManaPotion);
-                    shop.item[nextSlot++].SetDefaults(ItemID.LesserRestorationPotion);
-                    break;
-
-                case 3:
-                    shop.item[nextSlot++].SetDefaults(ItemID.CopperPickaxe);
-                    shop.item[nextSlot++].SetDefaults(ItemID.CopperAxe);
-                    shop.item[nextSlot++].SetDefaults(ItemID.CopperShortsword);
-                    break;
-            }
+            case 3:
+                shop.item[nextSlot++].SetDefaults(ItemID.CopperPickaxe);
+                shop.item[nextSlot++].SetDefaults(ItemID.CopperAxe);
+                shop.item[nextSlot++].SetDefaults(ItemID.CopperShortsword);
+                break;
         }
     }
 }

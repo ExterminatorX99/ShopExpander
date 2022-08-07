@@ -1,31 +1,30 @@
-﻿using System.Runtime.CompilerServices;
-using Terraria;
+﻿namespace ShopExpander;
 
-namespace ShopExpander
+using System.Runtime.CompilerServices;
+
+public class LazyObjectConfig<T>
 {
-    public class LazyObjectConfig<T>
+    private readonly ConditionalWeakTable<object, Ref<T>> _config = new();
+    private readonly T _defaultConfig;
+
+    public LazyObjectConfig(T defaultConfig = default)
     {
-        private readonly ConditionalWeakTable<object, Ref<T>> config = new();
-        private readonly T defConfig;
+        _defaultConfig = defaultConfig;
+    }
 
-        public LazyObjectConfig(T defConfig = default(T))
+    public void SetValue(object obj, T value)
+    {
+        var valueRef = _config.GetOrCreateValue(obj);
+        valueRef.Value = value;
+    }
+
+    public T GetValue(object obj)
+    {
+        if (_config.TryGetValue(obj, out var value))
         {
-            this.defConfig = defConfig;
+            return value.Value;
         }
 
-        public void SetValue(object obj, T value)
-        {
-            Ref<T> valueRef = config.GetOrCreateValue(obj);
-            valueRef.Value = value;
-        }
-
-        public T GetValue(object obj)
-        {
-            Ref<T> value;
-            if (config.TryGetValue(obj, out value))
-                return value.Value;
-            else
-                return defConfig;
-        }
+        return _defaultConfig;
     }
 }

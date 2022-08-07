@@ -1,0 +1,9 @@
+global using System.Reflection;
+global using Microsoft.Xna.Framework;
+global using Microsoft.Xna.Framework.Graphics;
+global using ReLogic;
+global using ReLogic.Content;
+global using Terraria;
+global using Terraria.GameContent;
+global using Terraria.ID;
+global using Terraria.ModLoader;

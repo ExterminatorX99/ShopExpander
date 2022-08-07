@@ -1,8 +1,8 @@
-﻿using Terraria;
+﻿namespace SillyDaftMod;
+
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-
-namespace SillyDaftMod;
 
 internal class CustomPageNPC : GlobalNPC
 {
@@ -18,21 +18,9 @@ internal class CustomPageNPC : GlobalNPC
     //without needing to add a reference to Shop Expander.
     private void SetupCustomPages(Chest shop, ref int nextSlot)
     {
-        Item[] items1 = new Item[]
-        {
-            MakeItem(ItemID.DirtBlock, "Cube of Earth"),
-            MakeItem(ItemID.MoneyTrough, "Bar of Soap"),
-            MakeItem(ItemID.CopperShortsword, "Legendary Terrablade"),
-            MakeItem(ItemID.Wood, "Spaghetti")
-        };
+        Item[] items1 = { MakeItem(ItemID.DirtBlock, "Cube of Earth"), MakeItem(ItemID.MoneyTrough, "Bar of Soap"), MakeItem(ItemID.CopperShortsword, "Legendary Terrablade"), MakeItem(ItemID.Wood, "Spaghetti") };
 
-        Item[] items2 = new Item[]
-        {
-            MakeItem(ItemID.StoneBlock, "Cube of Rock"),
-            MakeItem(ItemID.LastPrism, "First Prism"),
-            MakeItem(ItemID.EmptyBucket, "Stylish Hat"),
-            MakeItem(ItemID.Shadewood, "Spicy Spaghetti")
-        };
+        Item[] items2 = { MakeItem(ItemID.StoneBlock, "Cube of Rock"), MakeItem(ItemID.LastPrism, "First Prism"), MakeItem(ItemID.EmptyBucket, "Stylish Hat"), MakeItem(ItemID.Shadewood, "Spicy Spaghetti") };
 
         if (ModLoader.TryGetMod("ShopExpander", out var shopMod))
         {
@@ -43,19 +31,27 @@ internal class CustomPageNPC : GlobalNPC
         {
             //If Shop Expander isn't loaded, fall back to vanilla
             foreach (var item in items1)
+            {
                 shop.item[nextSlot++] = item;
+            }
+
             foreach (var item in items2)
+            {
                 shop.item[nextSlot++] = item;
+            }
         }
     }
 
     private static Item MakeItem(int type, string name)
     {
-        Item item = new Item(type);
+        var item = new Item(type);
         item.SetNameOverride(name);
         item.rare = ItemRarityID.Blue;
         if (item.value == 0)
+        {
             item.value = 1;
+        }
+
         item.value *= 11;
         return item;
     }

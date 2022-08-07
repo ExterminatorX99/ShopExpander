@@ -1,90 +1,84 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Terraria;
+﻿namespace ShopExpander.Providers;
 
-namespace ShopExpander.Providers
+public class DynamicPageProvider : ArrayProvider
 {
-    public class DynamicPageProvider : ArrayProvider
+    private readonly List<ProvisionedSegment> provisions = new();
+    private readonly Item[] vanillaShop;
+    private readonly Item[] vanillaShopCopy;
+
+    public DynamicPageProvider(string name, int priority) : this(new Item[0], name, priority) { }
+
+    public DynamicPageProvider(Item[] vanillaShop, string name, int priority) : base(name, priority, new Item[0])
     {
-        private struct ProvisionedSegment
-        {
-            public Item[] items;
-            public bool noDistinct;
+        this.vanillaShop = vanillaShop;
+        vanillaShopCopy = vanillaShop.Where(x => !x.IsAir).Select(x => x.Clone()).ToArray();
+        FixNumPages();
+    }
 
-            public ProvisionedSegment(int size, bool noDistinct)
+    public Item[] Provision(int capacity, bool noDistinct, bool vanillaCopy)
+    {
+        var items = new ProvisionedSegment(capacity, noDistinct);
+        if (vanillaCopy)
+        {
+            for (var i = 0; i < vanillaShopCopy.Length; i++)
             {
-                items = new Item[size];
-                for (int i = 0; i < size; i++)
-                {
-                    items[i] = new Item();
-                }
-                this.noDistinct = noDistinct;
+                items.items[i] = vanillaShopCopy[i].Clone();
             }
         }
 
-        private class ItemSameType : IEqualityComparer<Item>
+        provisions.Add(items);
+        return items.items;
+    }
+
+    public void UnProvision(Item[] items)
+    {
+        provisions.RemoveAll(x => x.items == items);
+    }
+
+    public void Compose()
+    {
+        ExtendedItems = ExtendedItems.Concat(
+                vanillaShop.Where(x => !x.IsAir))
+            .Concat(
+                provisions.Where(x => !x.noDistinct)
+                    .SelectMany(x => x.items.Where(y => !y.IsAir)))
+            .Distinct(new ItemSameType())
+            .Concat(
+                provisions.Where(x => x.noDistinct)
+                    .SelectMany(x => x.items.Where(y => !y.IsAir)))
+            .ToArray();
+
+        FixNumPages();
+        provisions.Clear();
+    }
+
+    private struct ProvisionedSegment
+    {
+        public readonly Item[] items;
+        public readonly bool noDistinct;
+
+        public ProvisionedSegment(int size, bool noDistinct)
         {
-            public bool Equals(Item x, Item y)
+            items = new Item[size];
+            for (var i = 0; i < size; i++)
             {
-                return x.Name == y.Name && x.type == y.type;
+                items[i] = new Item();
             }
 
-            public int GetHashCode(Item obj)
-            {
-                return obj.Name.GetHashCode() ^ obj.type.GetHashCode();
-            }
+            this.noDistinct = noDistinct;
+        }
+    }
+
+    private class ItemSameType : IEqualityComparer<Item>
+    {
+        public bool Equals(Item x, Item y)
+        {
+            return x.Name == y.Name && x.type == y.type;
         }
 
-        private readonly List<ProvisionedSegment> provisions = new List<ProvisionedSegment>();
-        private readonly Item[] vanillaShop;
-        private readonly Item[] vanillaShopCopy;
-
-        public DynamicPageProvider(string name, int priority) : this(new Item[0], name, priority) { }
-
-        public DynamicPageProvider(Item[] vanillaShop, string name, int priority) : base(name, priority, new Item[0])
+        public int GetHashCode(Item obj)
         {
-            this.vanillaShop = vanillaShop;
-            vanillaShopCopy = vanillaShop.Where(x => !x.IsAir).Select(x => x.Clone()).ToArray();
-            FixNumPages();
-        }
-
-        public Item[] Provision(int capacity, bool noDistinct, bool vanillaCopy)
-        {
-            ProvisionedSegment items = new ProvisionedSegment(capacity, noDistinct);
-            if (vanillaCopy)
-            {
-                for (int i = 0; i < vanillaShopCopy.Length; i++)
-                {
-                    items.items[i] = vanillaShopCopy[i].Clone();
-                }
-            }
-            provisions.Add(items);
-            return items.items;
-        }
-
-        public void UnProvision(Item[] items)
-        {
-            provisions.RemoveAll(x => x.items == items);
-        }
-
-        public void Compose()
-        {
-            ExtendedItems = ExtendedItems.Concat(
-                                vanillaShop.Where(x => !x.IsAir))
-                            .Concat(
-                                provisions.Where(x => !x.noDistinct)
-                                .SelectMany(x => x.items.Where(y => !y.IsAir)))
-                            .Distinct(new ItemSameType())
-                            .Concat(
-                                provisions.Where(x => x.noDistinct)
-                                .SelectMany(x => x.items.Where(y => !y.IsAir)))
-                            .ToArray();
-
-            FixNumPages();
-            provisions.Clear();
+            return obj.Name.GetHashCode() ^ obj.type.GetHashCode();
         }
     }
 }
