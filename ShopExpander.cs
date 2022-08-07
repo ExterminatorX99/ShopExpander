@@ -12,10 +12,11 @@ public class ShopExpander : Mod
     public static readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new(true);
     public static readonly LazyObjectConfig<(string name, int priority, Action setup)[]> LegacyMultipageSetupMethods = new();
 
-    public static CircularBufferProvider Buyback;
-
     private static bool textureSetupDone;
+
     public static ShopExpander Instance => ModContent.GetInstance<ShopExpander>();
+
+    public static CircularBufferProvider Buyback { get; private set; }
 
     public static ModItem ArrowLeft { get; private set; }
     public static ModItem ArrowRight { get; private set; }
@@ -170,16 +171,20 @@ public class ShopExpander : Mod
         var newTexture = new Texture2D(Main.graphics.GraphicsDevice, newBounds.Width, newBounds.Height);
         var area = newBounds.Width * newBounds.Height;
         var data = new Color[area];
+
         texture.GetData(0, newBounds, data, 0, area);
         newTexture.SetData(data);
+
         return newTexture;
     }
 
     private Asset<Texture2D> TextureAsset(Texture2D texture)
     {
         using MemoryStream stream = new(texture.Width * texture.Height);
+
         texture.SaveAsPng(stream, texture.Width, texture.Height);
         stream.Position = 0;
+
         return Assets.CreateUntracked<Texture2D>(stream, ".png");
     }
 }
