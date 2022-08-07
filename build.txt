@@ -6,3 +6,4 @@ hideResources = false
 includeSource = true
 includePDB = true
 homepage = https://github.com/ExterminatorX99/ShopExpander
+buildIgnore = SillyDaftMod/*
