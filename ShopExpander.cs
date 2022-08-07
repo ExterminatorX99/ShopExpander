@@ -1,11 +1,11 @@
-﻿namespace ShopExpander;
+namespace ShopExpander;
 
 using Patches;
 using Providers;
 
 public class ShopExpander : Mod
 {
-    public readonly CircularBufferProvider Buyback = new("Buyback", ProviderPriority.Buyback);
+    public CircularBufferProvider Buyback;
 
     public readonly LazyObjectConfig<int> ProvisionOverrides = new(40);
     public readonly LazyObjectConfig<bool> ModifierOverrides = new();
@@ -26,7 +26,7 @@ public class ShopExpander : Mod
     public void ResetAndBindShop()
     {
         ActiveShop = new ShopAggregator();
-        ActiveShop.AddPage(Buyback);
+        ActiveShop.AddPage(Buyback = new("Buyback", ProviderPriority.Buyback));
         Main.instance.shop[Main.npcShop].item = ActiveShop.CurrentFrame;
     }
 
