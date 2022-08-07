@@ -49,7 +49,7 @@ public class ShopExpander : Mod
 
         if (!Main.dedServ)
         {
-            RunOnMainThread(() =>
+            Main.RunOnMainThread(() =>
                 {
                     TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
                     TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
@@ -60,28 +60,13 @@ public class ShopExpander : Mod
         }
     }
 
-    // Exists in 'Main' on preview and July stable
-    // TODO: Remove when July stable releases
-    public static Task RunOnMainThread(Action action)
-    {
-        var tcs = new TaskCompletionSource();
-
-        Main.QueueMainThreadAction(() =>
-        {
-            action();
-            tcs.SetResult();
-        });
-
-        return tcs.Task;
-    }
-
     public override void Unload()
     {
         SetupShopPatch.Unload();
 
         if (textureSetupDone)
         {
-            RunOnMainThread(() =>
+            Main.RunOnMainThread(() =>
                 {
                     TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
                     TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
