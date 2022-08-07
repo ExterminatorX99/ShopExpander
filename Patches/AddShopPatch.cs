@@ -1,4 +1,4 @@
-namespace ShopExpander.Patches;
+﻿namespace ShopExpander.Patches;
 
 using OnChest = On.Terraria.Chest;
 
@@ -11,7 +11,7 @@ internal static class AddShopPatch
 
     private static int Prefix(OnChest.orig_AddItemToShop orig, Chest self, Item newItem)
     {
-        if (self != Main.instance.shop[Main.npcShop] || ShopExpander.ActiveShop == null)
+        if (self != Main.instance.shop[Main.npcShop] || ShopExpanderMod.ActiveShop == null)
         {
             return orig(self, newItem);
         }
@@ -28,8 +28,8 @@ internal static class AddShopPatch
         insertItem.buyOnce = true;
         insertItem.stack -= stack;
 
-        ShopExpander.Buyback.AddItem(insertItem);
-        ShopExpander.ActiveShop.RefreshFrame();
+        ShopExpanderMod.Buyback.AddItem(insertItem);
+        ShopExpanderMod.ActiveShop.RefreshFrame();
 
         return 0; //TODO: Fix PostSellItem hook
     }

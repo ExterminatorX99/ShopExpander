@@ -1,4 +1,4 @@
-namespace ShopExpander.Patches;
+﻿namespace ShopExpander.Patches;
 
 using On.Terraria.UI;
 
@@ -26,34 +26,34 @@ internal static class LeftRightClickPatch
 
     private static bool ClickedPageArrow(Item[] inv, int slot, bool skip)
     {
-        if (ShopExpander.ActiveShop == null)
+        if (ShopExpanderMod.ActiveShop == null)
         {
             return false;
         }
 
-        if (inv[slot].type == ShopExpander.ArrowLeft.Item.type)
+        if (inv[slot].type == ShopExpanderMod.ArrowLeft.Item.type)
         {
             if (skip)
             {
-                ShopExpander.ActiveShop.MoveFirst();
+                ShopExpanderMod.ActiveShop.MoveFirst();
             }
             else if (Main.mouseLeftRelease)
             {
-                ShopExpander.ActiveShop.MoveLeft();
+                ShopExpanderMod.ActiveShop.MoveLeft();
             }
 
             return true;
         }
 
-        if (inv[slot].type == ShopExpander.ArrowRight.Item.type)
+        if (inv[slot].type == ShopExpanderMod.ArrowRight.Item.type)
         {
             if (skip)
             {
-                ShopExpander.ActiveShop.MoveLast();
+                ShopExpanderMod.ActiveShop.MoveLast();
             }
             else if (Main.mouseLeftRelease)
             {
-                ShopExpander.ActiveShop.MoveRight();
+                ShopExpanderMod.ActiveShop.MoveRight();
             }
 
             return true;

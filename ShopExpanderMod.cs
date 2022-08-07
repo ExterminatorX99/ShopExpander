@@ -3,7 +3,7 @@ namespace ShopExpander;
 using Patches;
 using Providers;
 
-public class ShopExpander : Mod
+public class ShopExpanderMod : Mod
 {
     public static readonly LazyObjectConfig<int> ProvisionOverrides = new(40);
     public static readonly LazyObjectConfig<bool> ModifierOverrides = new();
@@ -14,14 +14,14 @@ public class ShopExpander : Mod
 
     private static bool textureSetupDone;
 
-    public static ShopExpander Instance => ModContent.GetInstance<ShopExpander>();
+    public static ShopExpanderMod Instance => ModContent.GetInstance<ShopExpanderMod>();
 
     public static CircularBufferProvider Buyback { get; private set; }
 
     public static ModItem ArrowLeft { get; private set; }
     public static ModItem ArrowRight { get; private set; }
 
-    public static ShopAggregator ActiveShop { get; internal set; }
+    public static ShopAggregator ActiveShop { get; private set; }
 
     public static void ResetAndBindShop()
     {
