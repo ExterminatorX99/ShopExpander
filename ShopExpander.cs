@@ -5,25 +5,24 @@ using Providers;
 
 public class ShopExpander : Mod
 {
-    public CircularBufferProvider Buyback;
+    public static readonly LazyObjectConfig<int> ProvisionOverrides = new(40);
+    public static readonly LazyObjectConfig<bool> ModifierOverrides = new();
+    public static readonly LazyObjectConfig<bool> NoDistinctOverrides = new();
+    public static readonly LazyObjectConfig<bool> IgnoreErrors = new();
+    public static readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new(true);
+    public static readonly LazyObjectConfig<(string name, int priority, Action setup)[]> LegacyMultipageSetupMethods = new();
 
-    public readonly LazyObjectConfig<int> ProvisionOverrides = new(40);
-    public readonly LazyObjectConfig<bool> ModifierOverrides = new();
-    public readonly LazyObjectConfig<bool> NoDistinctOverrides = new();
-    public readonly LazyObjectConfig<bool> IgnoreErrors = new();
-    public readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new(true);
-    public readonly LazyObjectConfig<(string name, int priority, Action setup)[]> LegacyMultipageSetupMethods = new();
+    public static CircularBufferProvider Buyback;
 
-    private bool textureSetupDone;
+    private static bool textureSetupDone;
+    public static ShopExpander Instance => ModContent.GetInstance<ShopExpander>();
 
-    public static ShopExpander Instance { get; private set; }
+    public static ModItem ArrowLeft { get; private set; }
+    public static ModItem ArrowRight { get; private set; }
 
-    public ModItem ArrowLeft { get; private set; }
-    public ModItem ArrowRight { get; private set; }
+    public static ShopAggregator ActiveShop { get; internal set; }
 
-    public ShopAggregator ActiveShop { get; internal set; }
-
-    public void ResetAndBindShop()
+    public static void ResetAndBindShop()
     {
         ActiveShop = new ShopAggregator();
         ActiveShop.AddPage(Buyback = new("Buyback", ProviderPriority.Buyback));
@@ -32,18 +31,11 @@ public class ShopExpander : Mod
 
     public override void Load()
     {
-        if (Instance != null)
-        {
-            throw new InvalidOperationException("An instance of ShopExpander is already loaded.");
-        }
-
         ArrowLeft = new ArrowItem("ArrowLeft");
         AddContent(ArrowLeft);
 
         ArrowRight = new ArrowItem("ArrowRight");
         AddContent(ArrowRight);
-
-        Instance = this;
     }
 
     public override void PostSetupContent()
@@ -97,8 +89,6 @@ public class ShopExpander : Mod
                 .GetAwaiter()
                 .GetResult(); // Use this instead of 'Wait()' so stack trace is more useful
         }
-
-        Instance = null;
     }
 
     public override object Call(params object[] args)
@@ -175,14 +165,14 @@ public class ShopExpander : Mod
         return null;
     }
 
-    private T AssertAndCast<T>(object[] args, int index, string site, bool checkForNull = false)
+    private static T AssertAndCast<T>(object[] args, int index, string site, bool checkForNull = false)
     {
         if (checkForNull && args[index] == null)
         {
             throw new ArgumentNullException($"args[{index}] cannot be null for {site}");
         }
 
-        if (!(args[index] is T casted))
+        if (args[index] is not T casted)
         {
             throw new ArgumentException($"args[{index}] must be {typeof(T).Name} for {site}");
         }
@@ -190,7 +180,7 @@ public class ShopExpander : Mod
         return casted;
     }
 
-    private Texture2D CropTexture(Texture2D texture, Rectangle newBounds)
+    private static Texture2D CropTexture(Texture2D texture, Rectangle newBounds)
     {
         var newTexture = new Texture2D(Main.graphics.GraphicsDevice, newBounds.Width, newBounds.Height);
         var area = newBounds.Width * newBounds.Height;
@@ -206,17 +196,5 @@ public class ShopExpander : Mod
         texture.SaveAsPng(stream, texture.Width, texture.Height);
         stream.Position = 0;
         return Assets.CreateUntracked<Texture2D>(stream, ".png");
-    }
-
-    public static class CallApi
-    {
-        public const string SetProvisionSize = "SetProvisionSize";
-        public const string SetModifier = "SetModifier";
-        public const string SetNoDistinct = "SetNoDistinct";
-        public const string SetVanillaNoCopy = "SetVanillaNoCopy";
-        public const string AddLegacyMultipageSetupMethods = "AddLegacyMultipageSetupMethods";
-        public const string AddPageFromArray = "AddPageFromArray";
-        public const string ResetAndBindShop = "ResetAndBindShop";
-        public const string GetLastShopExpanded = "GetLastShopExpanded";
     }
 }

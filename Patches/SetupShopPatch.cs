@@ -1,4 +1,4 @@
-﻿using HookList = Terraria.ModLoader.Core.HookList<Terraria.ModLoader.GlobalNPC>;
+using HookList = Terraria.ModLoader.Core.HookList<Terraria.ModLoader.GlobalNPC>;
 
 namespace ShopExpander.Patches;
 
@@ -39,7 +39,7 @@ internal static class SetupShopPatch
     private static void Prefix(orig_SetupShop orig, int type, Chest shop, ref int nextSlot)
     {
         var vanillaShop = shop.item;
-        ShopExpander.Instance.ResetAndBindShop();
+        ShopExpander.ResetAndBindShop();
         var dyn = new DynamicPageProvider(vanillaShop, null, ProviderPriority.Vanilla);
         var modifiers = new List<GlobalNPC>();
 
@@ -62,7 +62,7 @@ internal static class SetupShopPatch
 
         foreach (var globalNPC in HookSetupShop.Enumerate(globalNPCsArray))
         {
-            if (ShopExpander.Instance.ModifierOverrides.GetValue(globalNPC))
+            if (ShopExpander.ModifierOverrides.GetValue(globalNPC))
             {
                 modifiers.Add(globalNPC);
             }
@@ -91,21 +91,21 @@ internal static class SetupShopPatch
             }
         }
 
-        ShopExpander.Instance.ActiveShop.AddPage(dyn);
-        ShopExpander.Instance.ActiveShop.RefreshFrame();
+        ShopExpander.ActiveShop.AddPage(dyn);
+        ShopExpander.ActiveShop.RefreshFrame();
     }
 
     private static void DoSetupFor(Chest shop, DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)
     {
         try
         {
-            var methods = ShopExpander.Instance.LegacyMultipageSetupMethods.GetValue(obj);
+            var methods = ShopExpander.LegacyMultipageSetupMethods.GetValue(obj);
             if (methods != null)
             {
                 foreach (var item in methods)
                 {
                     var dynPage = new DynamicPageProvider(shop.item, item.name, item.priority);
-                    ShopExpander.Instance.ActiveShop.AddPage(dynPage);
+                    ShopExpander.ActiveShop.AddPage(dynPage);
                     item.setup?.Invoke();
                     DoSetupSingle(dynPage, obj, setup);
                     dynPage.Compose();
@@ -124,7 +124,7 @@ internal static class SetupShopPatch
 
     private static void DoSetupSingle(DynamicPageProvider dyn, object obj, Action<Chest> setup)
     {
-        var sizeToTry = ShopExpander.Instance.ProvisionOverrides.GetValue(obj);
+        var sizeToTry = ShopExpander.ProvisionOverrides.GetValue(obj);
         var numMoreTries = maxProvisionTries;
         var exceptions = new List<Exception>(maxProvisionTries);
 
@@ -168,17 +168,17 @@ internal static class SetupShopPatch
 
     private static Chest ProvisionChest(DynamicPageProvider dyn, object target, int size)
     {
-        return MakeFakeChest(dyn.Provision(size, ShopExpander.Instance.NoDistinctOverrides.GetValue(target), ShopExpander.Instance.VanillaCopyOverrrides.GetValue(target)));
+        return MakeFakeChest(dyn.Provision(size, ShopExpander.NoDistinctOverrides.GetValue(target), ShopExpander.VanillaCopyOverrrides.GetValue(target)));
     }
 
     private static void LogAndPrint(string type, Mod mod, object obj, Exception e)
     {
-        if (ShopExpander.Instance.IgnoreErrors.GetValue(obj))
+        if (ShopExpander.IgnoreErrors.GetValue(obj))
         {
             return;
         }
 
-        ShopExpander.Instance.IgnoreErrors.SetValue(obj, true);
+        ShopExpander.IgnoreErrors.SetValue(obj, true);
 
         var modName = "N/A";
         if (mod != null && mod.DisplayName != null)
