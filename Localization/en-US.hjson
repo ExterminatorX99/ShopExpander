@@ -1,0 +1,15 @@
+Mods: {
+	ShopExpander: {
+		Items: {
+			ArrowLeft: {
+				DisplayName: Previous page
+				Tooltip: ""
+			}
+
+			ArrowRight: {
+				DisplayName: Next page
+				Tooltip: ""
+			}
+		}
+	}
+}

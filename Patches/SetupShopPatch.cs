@@ -1,213 +1,74 @@
-using HookList = Terraria.ModLoader.Core.HookList<Terraria.ModLoader.GlobalNPC>;
-
 namespace ShopExpander.Patches;
 
-using MonoMod.RuntimeDetour.HookGen;
 using Providers;
+using HookList = Terraria.ModLoader.Core.GlobalHookList<GlobalNPC>;
 
 internal static class SetupShopPatch
 {
-    public delegate void orig_SetupShop(int type, Chest shop, ref int nextSlot);
+    private static readonly FieldInfo HookModifyActiveShopFieldInfo = typeof(NPCLoader).GetField("HookModifyActiveShop", BindingFlags.NonPublic | BindingFlags.Static)!;
 
-    public delegate void hook_SetupShop(orig_SetupShop orig, int type, Chest shop, ref int nextSlot);
-
-    private const int maxProvisionTries = 3;
-
-    private static readonly FieldInfo HookSetupShopFieldInfo = typeof(NPCLoader).GetField("HookSetupShop", BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly FieldInfo GlobalNPCsFieldInfo = typeof(NPCLoader).GetField("globalNPCs", BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly FieldInfo ShopToNPCFieldInfo = typeof(NPCLoader).GetField("shopToNPC", BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo SetupShopMethodInfo = typeof(NPCLoader).GetMethod(nameof(NPCLoader.SetupShop), BindingFlags.Public | BindingFlags.Static)!;
-
-    private static HookList HookSetupShop = null!;
-    private static List<GlobalNPC> globalNPCsArray = null!;
-    private static int[] shopToNpcs = null!;
+    private static HookList _hookModifyActiveShop = null!;
 
     public static void Load()
     {
-        HookSetupShop = (HookList)HookSetupShopFieldInfo.GetValue(null)!;
-        globalNPCsArray = (List<GlobalNPC>)GlobalNPCsFieldInfo.GetValue(null)!;
-        shopToNpcs = (int[])ShopToNPCFieldInfo.GetValue(null)!;
+        _hookModifyActiveShop = (HookList)HookModifyActiveShopFieldInfo.GetValue(null)!;
 
-        HookEndpointManager.Add(SetupShopMethodInfo, (hook_SetupShop)Prefix);
+        On_Chest.SetupShop_string_NPC += On_ChestOnSetupShop_string_NPC;
     }
 
     public static void Unload()
     {
-        HookSetupShop = null!;
-        globalNPCsArray = null!;
-        shopToNpcs = null!;
+        _hookModifyActiveShop = null!;
 
-        HookEndpointManager.Remove(SetupShopMethodInfo, (hook_SetupShop)Prefix);
+        On_Chest.SetupShop_string_NPC -= On_ChestOnSetupShop_string_NPC;
     }
 
-    private static void Prefix(orig_SetupShop orig, int type, Chest shop, ref int nextSlot)
+    private static void On_ChestOnSetupShop_string_NPC(On_Chest.orig_SetupShop_string_NPC orig, Chest self, string shopName, NPC? npc)
     {
-        var vanillaShop = shop.item;
         ShopExpanderMod.ResetAndBindShop();
-        var dyn = new DynamicPageProvider(vanillaShop, null, ProviderPriority.Vanilla);
-        var modifiers = new List<GlobalNPC>();
 
-        if (type < shopToNpcs.Length)
+        var items = new List<Item?>();
+        if (NPCShopDatabase.TryGetNPCShop(shopName, out var shop))
         {
-            type = shopToNpcs[type];
-        }
-        else
-        {
-            var npc = NPCLoader.GetNPC(type);
-            if (npc != null)
-            {
-                DoSetupFor(shop, dyn, "ModNPC", npc.Mod, npc, delegate(Chest c)
-                {
-                    var zero = 0;
-                    npc.SetupShop(c, ref zero);
-                });
-            }
+            shop.FillShop(items, npc);
         }
 
-        foreach (var globalNPC in HookSetupShop.Enumerate(globalNPCsArray))
+        Item?[] itemsArray = npc != null
+            ? ModifyActiveShop(npc, shopName, items)
+            : items.ToArray();
+
+        foreach (ref var item in itemsArray.AsSpan())
         {
-            if (ShopExpanderMod.ModifierOverrides.GetValue(globalNPC))
-            {
-                modifiers.Add(globalNPC);
-            }
-            else
-            {
-                DoSetupFor(shop, dyn, "GloabalNPC", globalNPC.Mod, globalNPC, delegate(Chest c)
-                {
-                    var zero = 0;
-                    globalNPC.SetupShop(type, c, ref zero);
-                });
-            }
+            item ??= new Item();
+            item.isAShopItem = true;
         }
+
+        var dyn = new DynamicPageProvider(itemsArray!, null, ProviderPriority.Vanilla);
 
         dyn.Compose();
-
-        foreach (var item in modifiers)
-        {
-            try
-            {
-                var max = dyn.ExtendedItems.Length;
-                item.SetupShop(type, MakeFakeChest(dyn.ExtendedItems), ref max);
-            }
-            catch (Exception e)
-            {
-                LogAndPrint("modifier GlobalNPC", item.Mod, item, e);
-            }
-        }
 
         ShopExpanderMod.ActiveShop.AddPage(dyn);
         ShopExpanderMod.ActiveShop.RefreshFrame();
     }
 
-    private static void DoSetupFor(Chest shop, DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)
+    private static Item?[] ModifyActiveShop(NPC npc, string shopName, List<Item?> items)
     {
-        ArgumentNullException.ThrowIfNull(shop);
-        ArgumentNullException.ThrowIfNull(mainDyn);
-        ArgumentNullException.ThrowIfNull(typeText);
-        ArgumentNullException.ThrowIfNull(mod);
-        ArgumentNullException.ThrowIfNull(obj);
-        ArgumentNullException.ThrowIfNull(setup);
+        const int extraCapacity = Chest.maxItems;
 
-        Debug.Assert(ShopExpanderMod.ActiveShop is not null);
-
-        try
+        items.EnsureCapacity(items.Count + extraCapacity);
+        for (var i = 0; i < extraCapacity; i++)
         {
-            var methods = ShopExpanderMod.LegacyMultipageSetupMethods.GetValue(obj);
-            if (methods != null)
-            {
-                foreach (var (name, priority, action) in methods)
-                {
-                    var dynPage = new DynamicPageProvider(shop.item, name, priority);
-                    ShopExpanderMod.ActiveShop.AddPage(dynPage);
-
-                    action?.Invoke();
-                    DoSetupSingle(dynPage, obj, setup);
-
-                    dynPage.Compose();
-                }
-            }
-            else
-            {
-                DoSetupSingle(mainDyn, obj, setup);
-            }
-        }
-        catch (Exception e)
-        {
-            LogAndPrint(typeText, mod, obj, e);
-        }
-    }
-
-    private static void DoSetupSingle(DynamicPageProvider dyn, object obj, Action<Chest> setup)
-    {
-        var sizeToTry = ShopExpanderMod.ProvisionOverrides.GetValue(obj);
-        var numMoreTries = maxProvisionTries;
-        var exceptions = new List<Exception>(maxProvisionTries);
-
-        var retry = true;
-        while (retry)
-        {
-            retry = false;
-            Chest? provision = null;
-            try
-            {
-                provision = ProvisionChest(dyn, obj, sizeToTry);
-                setup(provision);
-            }
-            catch (IndexOutOfRangeException e)
-            {
-                exceptions.Add(e);
-                if (--numMoreTries > 0)
-                {
-                    retry = true;
-                    if (provision != null)
-                    {
-                        dyn.UnProvision(provision.item);
-                    }
-
-                    sizeToTry *= 2;
-                }
-                else
-                {
-                    throw new AggregateException("Failed setup after trying with " + sizeToTry + " slots", exceptions);
-                }
-            }
-        }
-    }
-
-    private static Chest MakeFakeChest(Item[] items)
-    {
-        var fake = new Chest();
-        fake.item = items;
-        return fake;
-    }
-
-    private static Chest ProvisionChest(DynamicPageProvider dyn, object target, int size)
-    {
-        return MakeFakeChest(dyn.Provision(size, ShopExpanderMod.NoDistinctOverrides.GetValue(target), ShopExpanderMod.VanillaCopyOverrrides.GetValue(target)));
-    }
-
-    private static void LogAndPrint(string type, Mod? mod, object obj, Exception e)
-    {
-        if (ShopExpanderMod.IgnoreErrors.GetValue(obj))
-        {
-            return;
+            items.Add(null);
         }
 
-        ShopExpanderMod.IgnoreErrors.SetValue(obj, true);
+        var shopContentsArray = items.ToArray();
 
-        var modName = "N/A";
-        if (mod is { DisplayName: { } displayName })
+        NPCLoader.GetNPC(npc.type)?.ModifyActiveShop(shopName, shopContentsArray);
+        foreach (var g in _hookModifyActiveShop.Enumerate(npc))
         {
-            modName = displayName;
+            g.ModifyActiveShop(npc, shopName, shopContentsArray);
         }
 
-        var message = $"Shop Expander failed to load {type} from mod {modName}.";
-        Main.NewText(message, Color.Red);
-        Main.NewText("See log for more info. If this error persists, please consider reporting it to the author of the mod mentioned above.", Color.Red);
-        var logger = ShopExpanderMod.Instance.Logger;
-        logger.Error("--- SHOP EXPANDER ERROR ---");
-        logger.Error(message);
-        logger.Error(e.ToString());
-        logger.Error("--- END SHOP EXPANDER ERROR ---");
+        return shopContentsArray;
     }
 }

@@ -27,4 +27,16 @@ public class LazyObjectConfig<T>
 
         return _defaultConfig;
     }
+
+    public bool TryGetValue(object obj, out T? value)
+    {
+        if (_config.TryGetValue(obj, out var valueRef))
+        {
+            value = valueRef.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
 }

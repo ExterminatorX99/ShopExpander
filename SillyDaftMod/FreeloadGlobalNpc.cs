@@ -1,4 +1,4 @@
-﻿namespace SillyDaftMod;
+namespace SillyDaftMod;
 
 using Terraria;
 using Terraria.ID;
@@ -6,13 +6,19 @@ using Terraria.ModLoader;
 
 internal class FreeloadGlobalNpc : GlobalNPC
 {
-    public override void SetupShop(int type, Chest shop, ref int nextSlot)
+    public override void ModifyActiveShop(NPC npc, string shopName, Item[] items)
     {
-        if (type == NPCID.Dryad && ModLoader.HasMod("ShopExpander"))
+        if (npc.type == NPCID.Dryad && ModLoader.HasMod("ShopExpander"))
         {
-            for (var i = 0; i < nextSlot; i++)
+            foreach (Item item in items)
             {
-                shop.item[i].shopCustomPrice = 0;
+                // Skip 'air' items and null items.
+                if (item == null || item.type == ItemID.None)
+                {
+                    continue;
+                }
+
+                item.shopCustomPrice = 0;
             }
         }
     }

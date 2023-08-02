@@ -35,8 +35,6 @@ Shop expander provides some functions through `Mod.Call` that you can use in you
 | Call template | Effect |
 | --- | --- |
 | `Mod.Call("SetProvisionSize", object obj, int size);` | Returns `null`. `obj` should be an instance of `ModNPC` or `GlobalNPC`. Changes the size of the inventory given to `obj` to `size`. The default value is `40`. |
-| `Mod.Call("SetModifier", object obj);` | Returns `null`. `obj` should be an instance of `GlobalNPC`. Specifies, that `obj` wishes to modify existing items in a shop and won't add any new ones. `obj.SetupShop` will only be called once every other non-modifier object is processed. Instead of a new empty inventory, it will receive the full contents of the Extended shop. `nextSlot` will be set to the length of this shop.
-| `Mod.Call("SetNoDistinct", object obj);` | Returns `null`. `obj` should be an instance of `ModNPC` or `GlobalNPC`. Every item provided by `obj` will be added to the Expanded shop, even if it already contains one of the same type and display name. This may be useful, if a mod wishes to add items to a shop that have the same type, but different `ModItem` extra data.
 | `Mod.Call("GetLastShopExpanded");` | Returns the full contents of the last opened shop as an `Item[]`. May return `null` if no shop has been opened yet. |
 
 You can see an example of these in [SillyDaftMod](SillyDaftMod/SillyDaftMod.cs). If you wish to add or modify items in the open shop outside of `SetupShop`, add Shop Expander as reference and use the members of `ShopExpander.Instance.LastShopExpanded`.

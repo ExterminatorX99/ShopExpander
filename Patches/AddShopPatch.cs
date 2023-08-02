@@ -1,15 +1,13 @@
-﻿namespace ShopExpander.Patches;
-
-using OnChest = On.Terraria.Chest;
+namespace ShopExpander.Patches;
 
 internal static class AddShopPatch
 {
     public static void Load()
     {
-        OnChest.AddItemToShop += Prefix;
+        On_Chest.AddItemToShop += Prefix;
     }
 
-    private static int Prefix(OnChest.orig_AddItemToShop orig, Chest self, Item newItem)
+    private static int Prefix(On_Chest.orig_AddItemToShop orig, Chest self, Item newItem)
     {
         if (self != Main.instance.shop[Main.npcShop] || ShopExpanderMod.ActiveShop == null)
         {

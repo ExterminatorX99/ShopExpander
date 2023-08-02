@@ -1,15 +1,15 @@
-﻿namespace ShopExpander.Patches;
+namespace ShopExpander.Patches;
 
-using On.Terraria.UI;
+using Terraria.UI;
 
 internal static class LeftRightClickPatch
 {
     public static void Load()
     {
-        ItemSlot.HandleShopSlot += HandleShopSlot;
+        On_ItemSlot.HandleShopSlot += HandleShopSlot;
     }
 
-    private static void HandleShopSlot(ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
+    private static void HandleShopSlot(On_ItemSlot.orig_HandleShopSlot orig, Item[] inv, int slot, bool rightClickIsValid, bool leftClickIsValid)
     {
         if (leftClickIsValid && Main.mouseLeft && ClickedPageArrow(inv, slot, false))
         {

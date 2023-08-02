@@ -5,16 +5,7 @@ using Providers;
 
 public class ShopExpanderMod : Mod
 {
-    public static readonly LazyObjectConfig<int> ProvisionOverrides = new(40);
-    public static readonly LazyObjectConfig<bool> ModifierOverrides = new();
-    public static readonly LazyObjectConfig<bool> NoDistinctOverrides = new();
-    public static readonly LazyObjectConfig<bool> IgnoreErrors = new();
-    public static readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new(true);
-    public static readonly LazyObjectConfig<(string name, int priority, Action? setup)[]> LegacyMultipageSetupMethods = new();
-
     private static bool _textureSetupDone;
-
-    public static ShopExpanderMod Instance => ModContent.GetInstance<ShopExpanderMod>();
 
     public static CircularBufferProvider Buyback { get; private set; } = null!;
 
@@ -46,19 +37,14 @@ public class ShopExpanderMod : Mod
         AddShopPatch.Load();
         LeftRightClickPatch.Load();
 
-        ArrowLeft.DisplayName.SetDefault("Previous page");
-        ArrowRight.DisplayName.SetDefault("Next page");
-
         if (!Main.dedServ)
         {
-            Main.RunOnMainThread(() =>
-                {
-                    TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
-                    TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
-                    _textureSetupDone = true;
-                })
-                .GetAwaiter()
-                .GetResult(); // Use this instead of 'Wait()' so stack trace is more useful
+            Main.QueueMainThreadAction(() =>
+            {
+                TextureAssets.Item[ArrowLeft.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(4 * 28, 0, 28, 28)));
+                TextureAssets.Item[ArrowRight.Item.type] = TextureAsset(CropTexture(TextureAssets.TextGlyph[0].Value, new Rectangle(5 * 28, 0, 28, 28)));
+                _textureSetupDone = true;
+            });
         }
     }
 
@@ -66,16 +52,14 @@ public class ShopExpanderMod : Mod
     {
         SetupShopPatch.Unload();
 
-        if (_textureSetupDone)
+        Main.QueueMainThreadAction(() =>
         {
-            Main.RunOnMainThread(() =>
-                {
-                    TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
-                    TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
-                })
-                .GetAwaiter()
-                .GetResult(); // Use this instead of 'Wait()' so stack trace is more useful
-        }
+            if (!_textureSetupDone)
+                return;
+
+            TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
+            TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
+        });
     }
 
     public override object? Call(params object[] args)
@@ -87,49 +71,17 @@ public class ShopExpanderMod : Mod
 
         switch (command)
         {
-            case CallApi.SetProvisionSize:
-                ProvisionOverrides.SetValue(args[1], AssertAndCast<int>(args, 2, CallApi.SetProvisionSize));
-                break;
-
-            case CallApi.SetModifier:
-                ModifierOverrides.SetValue(args[1], true);
-                break;
-
-            case CallApi.SetNoDistinct:
-                NoDistinctOverrides.SetValue(args[1], true);
-                break;
-
-            case CallApi.SetVanillaNoCopy:
-                VanillaCopyOverrrides.SetValue(args[1], false);
-                break;
-
-            case CallApi.AddLegacyMultipageSetupMethods:
-                if (args.Length % 3 != 2)
-                {
-                    throw new ArgumentException("The number of arguments is incorrect (args.Length % 3 != 1) for " + CallApi.AddLegacyMultipageSetupMethods);
-                }
-
-                var methods = new (string name, int priority, Action? setup)[args.Length / 3];
-                for (var i = 0; i < methods.Length; i++)
-                {
-                    var offset = (i * 3) + 2;
-                    methods[i].name = AssertAndCast<string>(args, offset, CallApi.AddLegacyMultipageSetupMethods);
-                    methods[i].priority = AssertAndCast<int>(args, offset + 1, CallApi.AddLegacyMultipageSetupMethods);
-                    methods[i].setup = AssertAndCast<Action>(args, offset + 2, CallApi.AddLegacyMultipageSetupMethods);
-                }
-
-                LegacyMultipageSetupMethods.SetValue(args[1], methods);
-                break;
-
             case CallApi.AddPageFromArray:
                 if (ActiveShop == null)
                 {
                     throw new InvalidOperationException($"No active shop, try calling {CallApi.ResetAndBindShop} first");
                 }
 
-                ActiveShop.AddPage(new ArrayProvider(AssertAndCast<string>(args, 1, CallApi.AddPageFromArray),
-                    AssertAndCast<int>(args, 2, CallApi.AddPageFromArray),
-                    AssertAndCast<Item[]>(args, 3, CallApi.AddPageFromArray)));
+                var name = AssertAndCast<string>(args, 1, CallApi.AddPageFromArray);
+                var priority = AssertAndCast<int>(args, 2, CallApi.AddPageFromArray);
+                var items = AssertAndCast<Item[]>(args, 3, CallApi.AddPageFromArray);
+
+                ActiveShop.AddPage(new ArrayProvider(name, priority, items));
                 break;
 
             case CallApi.ResetAndBindShop:
@@ -137,12 +89,7 @@ public class ShopExpanderMod : Mod
                 break;
 
             case CallApi.GetLastShopExpanded:
-                if (ActiveShop != null)
-                {
-                    return ActiveShop.GetAllItems().ToArray();
-                }
-
-                break;
+                return ActiveShop?.GetAllItems().ToArray();
 
             default:
                 throw new ArgumentException($"Unknown command: {command}");
@@ -151,13 +98,8 @@ public class ShopExpanderMod : Mod
         return null;
     }
 
-    private static T AssertAndCast<T>(object[] args, int index, string site, bool checkForNull = false)
+    private static T AssertAndCast<T>(object[] args, int index, string site)
     {
-        if (checkForNull && args[index] == null)
-        {
-            throw new ArgumentNullException($"args[{index}] cannot be null for {site}");
-        }
-
         if (args[index] is not T casted)
         {
             throw new ArgumentException($"args[{index}] must be {typeof(T).Name} for {site}");

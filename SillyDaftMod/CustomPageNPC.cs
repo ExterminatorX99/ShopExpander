@@ -1,26 +1,40 @@
-﻿namespace SillyDaftMod;
+namespace SillyDaftMod;
 
+using System;
+using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
 internal class CustomPageNPC : GlobalNPC
 {
-    public override void SetupShop(int type, Chest shop, ref int nextSlot)
+    public override void ModifyActiveShop(NPC npc, string shopName, Item[] items)
     {
-        if (type == NPCID.Dryad)
+        if (npc.type == NPCID.Dryad)
         {
-            SetupCustomPages(shop, ref nextSlot);
+            SetupCustomPages(items);
         }
     }
 
     //This method demonstrates how you can add simple custom item pages,
     //without needing to add a reference to Shop Expander.
-    private void SetupCustomPages(Chest shop, ref int nextSlot)
+    private void SetupCustomPages(Item[] items)
     {
-        Item[] items1 = { MakeItem(ItemID.DirtBlock, "Cube of Earth"), MakeItem(ItemID.MoneyTrough, "Bar of Soap"), MakeItem(ItemID.CopperShortsword, "Legendary Terrablade"), MakeItem(ItemID.Wood, "Spaghetti") };
+        Item[] items1 =
+        {
+            MakeItem(ItemID.DirtBlock, "Cube of Earth"),
+            MakeItem(ItemID.MoneyTrough, "Bar of Soap"),
+            MakeItem(ItemID.CopperShortsword, "Legendary Terrablade"),
+            MakeItem(ItemID.Wood, "Spaghetti"),
+        };
 
-        Item[] items2 = { MakeItem(ItemID.StoneBlock, "Cube of Rock"), MakeItem(ItemID.LastPrism, "First Prism"), MakeItem(ItemID.EmptyBucket, "Stylish Hat"), MakeItem(ItemID.Shadewood, "Spicy Spaghetti") };
+        Item[] items2 =
+        {
+            MakeItem(ItemID.StoneBlock, "Cube of Rock"),
+            MakeItem(ItemID.LastPrism, "First Prism"),
+            MakeItem(ItemID.EmptyBucket, "Stylish Hat"),
+            MakeItem(ItemID.Shadewood, "Spicy Spaghetti"),
+        };
 
         if (ModLoader.TryGetMod("ShopExpander", out var shopMod))
         {
@@ -30,14 +44,23 @@ internal class CustomPageNPC : GlobalNPC
         else
         {
             //If Shop Expander isn't loaded, fall back to vanilla
-            foreach (var item in items1)
-            {
-                shop.item[nextSlot++] = item;
-            }
+            var itemsToAdd = items1.Concat(items2);
+            using var enumerator = itemsToAdd.GetEnumerator();
 
-            foreach (var item in items2)
+            foreach (ref Item item in items.AsSpan())
             {
-                shop.item[nextSlot++] = item;
+                // Skip 'air' items and null items.
+                if (item == null || item.type == ItemID.None)
+                {
+                    continue;
+                }
+
+                item = enumerator.Current;
+
+                if (!enumerator.MoveNext())
+                {
+                    break;
+                }
             }
         }
     }

@@ -12,6 +12,15 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.3.0:
+- Fix for 1.4.4
+- Remove following Call apis
+  - SetProvisionSize - You can add as many items as you want if the mod is enabled
+  - SetModifier - Not needed anymore. Now mod order dependent(just like vanilla)
+  - SetNoDistinct - Duplicate cleanup is not done anymore
+  - SetVanillaNoCopy - Unused
+  - AddLegacyMultipageSetupMethods - switch to 'AddPageFromArray' Call
+
 v1.2.6:
 - Fix buyback buffer
 
