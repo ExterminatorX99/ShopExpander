@@ -43,15 +43,9 @@ public class ShopAggregator
             return;
         }
 
-        if (_currPage < 0)
-        {
-            _currPage = 0;
-        }
+        Debug.Assert(numPages > 0);
 
-        if (_currPage >= numPages)
-        {
-            _currPage = numPages - 1;
-        }
+        _currPage = Math.Clamp(_currPage, 0, numPages - 1);
 
         var providerPageNum = _currPage;
         var providerIndex = 0;
