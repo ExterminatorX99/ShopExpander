@@ -19,7 +19,7 @@ public class ShopExpanderMod : Mod
     internal static HashSet<int> NpcTypeIgnoreList { get; private set; } = null!;
 
     // Ignore specific shop from this npc
-    internal static HashSet<(int Type, string ShopName)> NpcShopIgnoreList { get; } = null!;
+    internal static HashSet<(int Type, string ShopName)> NpcShopIgnoreList { get; private set; } = null!;
 
     [MemberNotNull(nameof(ActiveShop))]
     public static void ResetAndBindShop()
@@ -32,6 +32,7 @@ public class ShopExpanderMod : Mod
     public override void Load()
     {
         NpcTypeIgnoreList = new();
+        NpcShopIgnoreList = new();
 
         ArrowLeft = new ArrowItem("ArrowLeft");
         AddContent(ArrowLeft);
@@ -60,6 +61,7 @@ public class ShopExpanderMod : Mod
     public override void Unload()
     {
         NpcTypeIgnoreList = null!;
+        NpcShopIgnoreList = null!;
 
         SetupShopPatch.Unload();
 
