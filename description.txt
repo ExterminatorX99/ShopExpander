@@ -12,6 +12,12 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.4.0:
+- Add `AddNpcTypeToIgnoreList` Call api that tells ShopExpander to ignore ALL shops from a specific npc
+    - `Mod.Call("AddNpcTypeToIgnoreList", int npcType)`
+- Add `AddNpcShopToIgnoreList` Call api that tells ShopExpander to ignore ONE shop from a specific npc
+    - `Mod.Call("AddNpcShopToIgnoreList", int npcType, string shopName)`
+
 v1.3.0:
 - Fix for 1.4.4
 - Remove following Call apis

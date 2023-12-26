@@ -3,6 +3,7 @@ namespace ShopExpander;
 using Patches;
 using Providers;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class ShopExpanderMod : Mod
 {
     private static bool _textureSetupDone;
@@ -14,6 +15,12 @@ public class ShopExpanderMod : Mod
 
     public static ShopAggregator? ActiveShop { get; private set; }
 
+    // Ignore all shops from this npc
+    internal static HashSet<int> NpcTypeIgnoreList { get; private set; } = null!;
+
+    // Ignore specific shop from this npc
+    internal static HashSet<(int Type, string ShopName)> NpcShopIgnoreList { get; } = null!;
+
     [MemberNotNull(nameof(ActiveShop))]
     public static void ResetAndBindShop()
     {
@@ -24,6 +31,8 @@ public class ShopExpanderMod : Mod
 
     public override void Load()
     {
+        NpcTypeIgnoreList = new();
+
         ArrowLeft = new ArrowItem("ArrowLeft");
         AddContent(ArrowLeft);
 
@@ -50,12 +59,16 @@ public class ShopExpanderMod : Mod
 
     public override void Unload()
     {
+        NpcTypeIgnoreList = null!;
+
         SetupShopPatch.Unload();
 
         Main.QueueMainThreadAction(() =>
         {
             if (!_textureSetupDone)
+            {
                 return;
+            }
 
             TextureAssets.Item[ArrowLeft.Item.type].Value.Dispose();
             TextureAssets.Item[ArrowRight.Item.type].Value.Dispose();
@@ -72,6 +85,7 @@ public class ShopExpanderMod : Mod
         switch (command)
         {
             case CallApi.AddPageFromArray:
+            {
                 if (ActiveShop == null)
                 {
                     throw new InvalidOperationException($"No active shop, try calling {CallApi.ResetAndBindShop} first");
@@ -83,16 +97,33 @@ public class ShopExpanderMod : Mod
 
                 ActiveShop.AddPage(new ArrayProvider(name, priority, items));
                 break;
-
+            }
             case CallApi.ResetAndBindShop:
+            {
                 ResetAndBindShop();
                 break;
-
+            }
             case CallApi.GetLastShopExpanded:
+            {
                 return ActiveShop?.GetAllItems().ToArray();
+            }
+            case CallApi.AddNpcTypeToIgnoreList:
+            {
+                int npcType = AssertAndCast<int>(args, 0, CallApi.AddNpcTypeToIgnoreList);
 
+                return NpcTypeIgnoreList.Add(npcType);
+            }
+            case CallApi.AddNpcShopToIgnoreList:
+            {
+                int npcType = AssertAndCast<int>(args, 0, CallApi.AddNpcShopToIgnoreList);
+                string shopName = AssertAndCast<string>(args, 1, CallApi.AddNpcShopToIgnoreList);
+
+                return NpcShopIgnoreList.Add((npcType, shopName));
+            }
             default:
+            {
                 throw new ArgumentException($"Unknown command: {command}");
+            }
         }
 
         return null;
