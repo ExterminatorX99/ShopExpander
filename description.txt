@@ -12,6 +12,9 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.5.0
+- Add config option to disable paging for specific NPCs
+
 v1.4.1:
 - Fix empty shops
 

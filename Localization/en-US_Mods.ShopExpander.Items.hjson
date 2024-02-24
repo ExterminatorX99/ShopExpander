@@ -13,3 +13,13 @@ Mods: {
 		}
 	}
 }
+
+ArrowLeft: {
+	DisplayName: Arrow Left
+	Tooltip: ""
+}
+
+ArrowRight: {
+	DisplayName: Arrow Right
+	Tooltip: ""
+}

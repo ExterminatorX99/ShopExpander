@@ -1,0 +1,8 @@
+ShopExpanderConfig: {
+	DisplayName: Shop Expander Config
+
+	DisableShopPagingForNPCs: {
+		Label: Disable Shop Paging For NPCs
+		Tooltip: Add NPCs to this list to disable shop paging for them
+	}
+}

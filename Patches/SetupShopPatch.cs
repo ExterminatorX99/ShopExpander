@@ -27,18 +27,27 @@ internal static class SetupShopPatch
     {
         ShopExpanderMod.ResetAndBindShop();
 
-        // Ignore all shops from this npc
-        if (npc != null && ShopExpanderMod.NpcTypeIgnoreList.Contains(npc.type))
+        if (npc != null)
         {
-            orig(self, shopName, npc);
-            return;
-        }
+            // Ignore all shops from this npc
+            if (ShopExpanderMod.NpcTypeIgnoreList.Contains(npc.type))
+            {
+                orig(self, shopName, npc);
+                return;
+            }
 
-        // Ignore specific shop from this npc
-        if (npc != null && ShopExpanderMod.NpcShopIgnoreList.Contains((npc.type, shopName)))
-        {
-            orig(self, shopName, npc);
-            return;
+            if (ShopExpanderConfig.Instance.DisableShopPagingForNPCs.Any(x => x.Type == npc.type))
+            {
+                orig(self, shopName, npc);
+                return;
+            }
+
+            // Ignore specific shop from this npc
+            if (ShopExpanderMod.NpcShopIgnoreList.Contains((npc.type, shopName)))
+            {
+                orig(self, shopName, npc);
+                return;
+            }
         }
 
         var items = new List<Item?>();
