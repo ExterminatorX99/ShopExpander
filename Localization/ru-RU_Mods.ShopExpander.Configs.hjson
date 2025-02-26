@@ -1,0 +1,8 @@
+ShopExpanderConfig: {
+	DisplayName: Конфигурация Shop Expander
+
+	DisableShopPagingForNPCs: {
+		Label: Отключить страничность конкретных магазинов
+		Tooltip: Укажите конкретных НИПов, на вы не хотите, чтобы влиял мод
+	}
+}
