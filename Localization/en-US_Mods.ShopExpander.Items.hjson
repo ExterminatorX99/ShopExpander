@@ -1,25 +1,9 @@
-Mods: {
-	ShopExpander: {
-		Items: {
-			ArrowLeft: {
-				DisplayName: Previous page
-				Tooltip: ""
-			}
-
-			ArrowRight: {
-				DisplayName: Next page
-				Tooltip: ""
-			}
-		}
-	}
-}
-
 ArrowLeft: {
-	DisplayName: Arrow Left
+	DisplayName: Previous page
 	Tooltip: ""
 }
 
 ArrowRight: {
-	DisplayName: Arrow Right
+	DisplayName: Next page
 	Tooltip: ""
 }

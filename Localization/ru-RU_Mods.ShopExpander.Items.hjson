@@ -1,25 +1,9 @@
-Mods: {
-	ShopExpander: {
-		Items: {
-			ArrowLeft: {
-				DisplayName: Перелестнуть влево
-				Tooltip: ""
-			}
-
-			ArrowRight: {
-				DisplayName: Перелестнуть вправо
-				Tooltip: ""
-			}
-		}
-	}
-}
-
 ArrowLeft: {
-	DisplayName: Стрелка влево
+	DisplayName: Перелестнуть влево
 	Tooltip: ""
 }
 
 ArrowRight: {
-	DisplayName: Стрелка вправо
+	DisplayName: Перелестнуть вправо
 	Tooltip: ""
 }
