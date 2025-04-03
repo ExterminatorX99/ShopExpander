@@ -1,0 +1,8 @@
+ShopExpanderConfig: {
+	DisplayName: 商店扩展器配置
+
+	DisableShopPagingForNPCs: {
+		Label: 为NPC禁用分页
+		Tooltip: 将NPC添加到此列表中以禁用其商店分页功能
+	}
+}

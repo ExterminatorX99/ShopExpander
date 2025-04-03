@@ -1,0 +1,9 @@
+ArrowLeft: {
+	DisplayName: 上一页
+	Tooltip: ""
+}
+
+ArrowRight: {
+	DisplayName: 下一页
+	Tooltip: ""
+}
