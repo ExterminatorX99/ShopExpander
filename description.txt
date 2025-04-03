@@ -12,6 +12,9 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.7.0
+- Added Chinese localization. Thank you Er1c-WYH
+
 v1.6.0
 - Added Russian localization. Thank you alinahvoshch
 
