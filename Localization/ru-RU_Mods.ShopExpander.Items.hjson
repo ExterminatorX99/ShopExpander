@@ -1,4 +1,4 @@
-ArrowLeft: {
+﻿ArrowLeft: {
 	DisplayName: Перелестнуть влево
 	Tooltip: ""
 }
@@ -7,3 +7,5 @@ ArrowRight: {
 	DisplayName: Перелестнуть вправо
 	Tooltip: ""
 }
+
+Buyback: выкуп

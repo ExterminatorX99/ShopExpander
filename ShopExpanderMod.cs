@@ -2,6 +2,7 @@ namespace ShopExpander;
 
 using Patches;
 using Providers;
+using Terraria.Localization;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class ShopExpanderMod : Mod
@@ -25,7 +26,7 @@ public class ShopExpanderMod : Mod
     public static void ResetAndBindShop()
     {
         ActiveShop = new ShopAggregator();
-        ActiveShop.AddPage(Buyback = new("Buyback", ProviderPriority.Buyback));
+        ActiveShop.AddPage(Buyback = new(Language.GetTextValue("Mods.ShopExpander.Items.Buyback"), ProviderPriority.Buyback));
         Main.instance.shop[Main.npcShop].item = ActiveShop.CurrentFrame;
     }
 
