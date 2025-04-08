@@ -12,6 +12,9 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
+v1.8.1
+- Fixed issue with some mod calls being broken. Thank you elytrafae for reporting.
+
 v1.8.0
 - Added translation for Buyback(missing Chinese localization for it). Thank you Alino4kaHvoshch
 

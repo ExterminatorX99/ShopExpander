@@ -85,6 +85,8 @@ public class ShopExpanderMod : Mod
             throw new ArgumentException("first argument must be string");
         }
 
+        int argNum = 1;
+
         switch (command)
         {
             case CallApi.AddPageFromArray:
@@ -94,9 +96,9 @@ public class ShopExpanderMod : Mod
                     throw new InvalidOperationException($"No active shop, try calling {CallApi.ResetAndBindShop} first");
                 }
 
-                var name = AssertAndCast<string>(args, 1, CallApi.AddPageFromArray);
-                var priority = AssertAndCast<int>(args, 2, CallApi.AddPageFromArray);
-                var items = AssertAndCast<Item[]>(args, 3, CallApi.AddPageFromArray);
+                var name = AssertAndCast<string>(args, ref argNum, CallApi.AddPageFromArray);
+                var priority = AssertAndCast<int>(args, ref argNum, CallApi.AddPageFromArray);
+                var items = AssertAndCast<Item[]>(args, ref argNum, CallApi.AddPageFromArray);
 
                 ActiveShop.AddPage(new ArrayProvider(name, priority, items));
                 break;
@@ -112,14 +114,14 @@ public class ShopExpanderMod : Mod
             }
             case CallApi.AddNpcTypeToIgnoreList:
             {
-                int npcType = AssertAndCast<int>(args, 0, CallApi.AddNpcTypeToIgnoreList);
+                int npcType = AssertAndCast<int>(args, ref argNum, CallApi.AddNpcTypeToIgnoreList);
 
                 return NpcTypeIgnoreList.Add(npcType);
             }
             case CallApi.AddNpcShopToIgnoreList:
             {
-                int npcType = AssertAndCast<int>(args, 0, CallApi.AddNpcShopToIgnoreList);
-                string shopName = AssertAndCast<string>(args, 1, CallApi.AddNpcShopToIgnoreList);
+                int npcType = AssertAndCast<int>(args, ref argNum, CallApi.AddNpcShopToIgnoreList);
+                string shopName = AssertAndCast<string>(args, ref argNum, CallApi.AddNpcShopToIgnoreList);
 
                 return NpcShopIgnoreList.Add((npcType, shopName));
             }
@@ -132,12 +134,14 @@ public class ShopExpanderMod : Mod
         return null;
     }
 
-    private static T AssertAndCast<T>(object[] args, int index, string site)
+    private static T AssertAndCast<T>(object[] args, ref int index, string site)
     {
         if (args[index] is not T casted)
         {
             throw new ArgumentException($"args[{index}] must be {typeof(T).Name} for {site}");
         }
+
+        index++;
 
         return casted;
     }
